@@ -1,4 +1,4 @@
-   <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -10,7 +10,7 @@
   
   /* LOGIN */
   #loginAdmin{height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;background:linear-gradient(135deg,red,blue);color:yellow;position:fixed;width:100%;z-index:1000;}
-  #loginAdmin input{width:300px;padding:15px;border:none;border-radius:30px;margin-bottom:20px;font-size:16px;text-align:center;box-shadow: 0 4px 15px green;}
+  #loginAdmin input{width:300px;padding:15px;border:none;border-radius:30px;margin-bottom:10px;font-size:16px;text-align:center;box-shadow: 0 4px 15px green;}
   #loginAdmin button{width:200px;padding:12px;border:none;border-radius:30px;background:green;color:white;font-weight:bold;cursor:pointer;transition: 0.3s;}
   #loginAdmin button:hover{background:deeppink; transform: scale(1.05);}
 
@@ -49,15 +49,17 @@
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
 <div id="loginAdmin">
-  <h2 style="margin-bottom: 20px;">🛡ADMIN ACCES</h2>
-  <input type="password" id="adminPassword" placeholder="Enter security password">
+  <h2 style="margin-bottom: 20px;">🛡 ADMIN ACCESS</h2>
+  <input type="email" id="adminEmail" placeholder="Email Admin">
+  <input type="password" id="adminPassword" placeholder="Password">
   <button id="loginBtn">UNLOCK SYSTEM</button>
-  <p id="errorMsg" style="color:#ffbaba; margin-top:15px; font-weight: bold;"></p>
+  <p id="errorMsg" style="color:#ffbaba; margin-top:15px; font-weight: bold; font-size: 12px;"></p>
 </div>
 
 <div id="dashboard">
@@ -90,11 +92,8 @@
 <video id="localVideo" autoplay muted playsinline></video>
 <video id="remoteVideo" autoplay playsinline></video>
 
-<script type="module">
-  
+<script>
 // ==== CONFIGURATION FIREBASE ====
-
-const ADMIN_PASSWORD = "???Huden123";
 const firebaseConfig = {
   apiKey: "AIzaSyDIuRM5Eo6IVG_ghspnIQMcmAabgfcCn7k",
   authDomain: "meet-ur-night-s-dominator.firebaseapp.com",
@@ -108,22 +107,30 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-
+const auth = firebase.auth();
 const notificationSound = new Audio('https://www.soundjay.com/buttons/beep-07a.mp3');
 
-// ==== AUTHENTIFICATION ====
+// ==== AUTHENTIFICATION SÉCURISÉE ====
 document.getElementById("loginBtn").onclick = () => {
-  if(document.getElementById("adminPassword").value === ADMIN_PASSWORD){
-    document.getElementById("loginAdmin").style.display = "none";
-    document.getElementById("dashboard").style.display = "flex";
-    initDashboard();
-  } else {
-    document.getElementById("errorMsg").textContent = "❌ Access Denied: Incorrect Password";
-  }
+  const email = document.getElementById("adminEmail").value;
+  const password = document.getElementById("adminPassword").value;
+  const errorMsg = document.getElementById("errorMsg");
+
+  errorMsg.textContent = "Connecting...";
+
+  auth.signInWithEmailAndPassword(email, password)
+    .then((userCredential) => {
+      // Succès ! On cache le login et montre le dashboard
+      document.getElementById("loginAdmin").style.display = "none";
+      document.getElementById("dashboard").style.display = "flex";
+      initDashboard();
+    })
+    .catch((error) => {
+      errorMsg.textContent = "❌ Error: " + error.message;
+    });
 };
 
-// ==== CRYPTAGE ====
-
+// ==== CRYPTAGE (Inchangé) ====
 function utf8_to_b64(str){ return btoa(unescape(encodeURIComponent(str))); }
 function b64_to_utf8(str){ try{ return decodeURIComponent(escape(atob(str))); } catch(e){return str;} }
 function encrypt(text,key){ return utf8_to_b64(key+"::"+text); }
@@ -138,8 +145,7 @@ function getStaticKey(email, imgNum) {
   return btoa(cleanEmail + "_KEY_" + imgNum).slice(0, 16); 
 }
 
-// ==== LOGIQUE DASHBOARD ====
-
+// ==== LOGIQUE DASHBOARD (Inchangée) ====
 let currentConvKey = null;
 let currentUserData = null;
 
@@ -152,11 +158,7 @@ function initDashboard() {
     userList.innerHTML = "";
     for(let key in users){
       const u = users[key];
-      
-      // Récupération dynamique de l'image (imgNum envoyé par la Page 3)
-      
       const profilImgNum = u.imgNum || "1"; 
-      
       const div = document.createElement("div");
       div.className = "user-item" + (currentConvKey === key ? " active" : "");
       div.innerHTML = `
@@ -175,14 +177,11 @@ function initDashboard() {
 function selectUser(key, userData) {
   currentConvKey = key;
   currentUserData = userData;
-  
   document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
-  
   const profilImgNum = userData.imgNum || "1";
   document.getElementById("profileName").textContent = userData.name;
   document.getElementById("profileId").textContent = userData.userEmail;
   document.getElementById("profileImg").src = `IMAGE/img${profilImgNum}.jpg`;
-  
   listenToMessages(key, userData);
 }
 
@@ -196,19 +195,13 @@ function listenToMessages(key, userData) {
     chatBody.innerHTML = "";
     const msgs = snap.val();
     if(!msgs) return;
-
     let msgIds = Object.keys(msgs);
     msgIds.forEach((mId, index) => {
       const m = msgs[mId];
       const d = document.createElement("div");
       d.className = "msg " + (m.from === "admin" ? "right" : "left");
-      
       const content = decrypt(m.message, encryptionKey);
-      
       if(content.startsWith("data:image")) {
-        
-        // Label spécial pour le tout premier message (le scan)
-        
         const label = (index === 0 && m.from === "user") ? "<span class='scan-label'>💳 [DEPOSIT SCAN]</span>" : "";
         d.innerHTML = `${label}<img src="${content}" onclick="window.open(this.src)">`;
       } else {
@@ -217,9 +210,6 @@ function listenToMessages(key, userData) {
       chatBody.appendChild(d);
     });
     chatBody.scrollTop = chatBody.scrollHeight;
-    
-    // Alerte sonore pour les nouveaux messages clients
-    
     const lastMsg = msgs[msgIds[msgIds.length - 1]];
     if(lastMsg && lastMsg.from !== "admin") {
         notificationSound.play().catch(()=>{});
@@ -228,14 +218,12 @@ function listenToMessages(key, userData) {
 }
 
 // ==== ENVOI MESSAGES ====
-
 document.getElementById("sendBtn").onclick = sendMessage;
 document.getElementById("textInput").onkeypress = (e) => { if(e.key === "Enter") sendMessage(); };
 
 function sendMessage() {
   const text = document.getElementById("textInput").value.trim();
   if(!text || !currentConvKey) return;
-  
   const profilImgNum = currentUserData.imgNum || "1";
   const key = getStaticKey(currentUserData.userEmail, profilImgNum);
   db.ref("messages/" + currentConvKey).push({
