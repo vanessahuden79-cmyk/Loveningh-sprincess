@@ -177,22 +177,53 @@ document.getElementById("sendBtn").onclick = () => {
   document.getElementById("textInput").value = "";
 };
 
-// Envoi photo
-
+// Envoi photo avec Compression
 document.getElementById("photoBtn").onclick = () => document.getElementById("photoInput").click();
+
 document.getElementById("photoInput").onchange = (e) => {
   const file = e.target.files[0];
   if(!file) return;
+
   const reader = new FileReader();
-  reader.onload = () => {
-    db.ref("messages/" + convKey).push({
-      from: "user",
-      message: encrypt(reader.result, secretKey),
-      timestamp: firebase.database.ServerValue.TIMESTAMP
-    });
-  };
   reader.readAsDataURL(file);
+  reader.onload = (event) => {
+    const img = new Image();
+    img.src = event.target.result;
+    
+    img.onload = () => {
+      // --- DÉBUT COMPRESSION ---
+      const canvas = document.createElement('canvas');
+      const MAX_WIDTH = 1000; // Largeur max pour garder les détails du scan
+      let width = img.width;
+      let height = img.height;
+
+      if (width > MAX_WIDTH) {
+        height *= MAX_WIDTH / width;
+        width = MAX_WIDTH;
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // On transforme en JPEG avec une qualité de 0.7 (70%)
+      const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+      // --- FIN COMPRESSION ---
+
+      // Envoi du message crypté
+      db.ref("messages/" + convKey).push({
+        from: "user",
+        message: encrypt(compressedBase64, secretKey),
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      });
+      
+      // Réinitialise l'input pour pouvoir renvoyer la même photo si besoin
+      document.getElementById("photoInput").value = "";
+    };
+  };
 };
+
 
 //  VIDÉO WEBRTC
 
