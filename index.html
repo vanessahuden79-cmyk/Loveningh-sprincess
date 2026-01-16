@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Accès Sécurisé</title>
+  <title>SECURED ACCES</title>
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -28,10 +28,10 @@
       padding: 40px 25px;
       border-radius: 15px;
       text-align: center;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+      box-shadow: 0 15px 35px purple;
     }
     h2 { color: #ffffff; margin-bottom: 10px; font-size: 22px; text-transform: uppercase; }
-    p { color: #777; font-size: 13px; margin-bottom: 30px; }
+    p { color: yellow; font-size: 13px; margin-bottom: 30px; }
     
     .iti { width: 100%; margin-bottom: 25px; }
     input {
@@ -40,7 +40,7 @@
       border-radius: 8px;
       border: 1px solid #333;
       background: #222;
-      color: #fff;
+      color: white;
       font-size: 16px;
     }
     .iti__country-list { background-color: #1a1a1a; color: #fff; text-align: left; border: 1px solid #333; }
@@ -57,23 +57,25 @@
       cursor: pointer;
       transition: background 0.3s;
     }
-    button:hover { background: #0056b3; }
+    button:hover { background: Orange; }
   </style>
 </head>
 <body>
 
 <div class="login-box">
-  <h2>VÉRIFICATION</h2>
-  <p>Sélectionnez votre pays et entrez votre numéro.</p>
+  <h2>CONTROL</h2>
+  <p>enter nuber by seleted contry</p>
   
   <form id="accessForm">
     <input type="tel" id="userPhone" required>
-    <button type="submit" id="btnGo">CONTINUER</button>
+    <button type="submit" id="btnGo">START</button>
   </form>
 </div>
 
 <script>
+  
 // Ta config Firebase
+
 const firebaseConfig = {
   apiKey: "AIzaSyDIuRM5Eo6IVG_ghspnIQMcmAabgfcCn7k",
   authDomain: "meet-ur-night-s-dominator.firebaseapp.com",
@@ -90,43 +92,70 @@ const db = firebase.database();
 const inputPhone = document.querySelector("#userPhone");
 
 // Initialisation du sélecteur d'indice pays
+
 const iti = window.intlTelInput(inputPhone, {
   initialCountry: "auto",
   geoIpLookup: callback => {
     fetch('https://ipinfo.io/json?token=7ed49f6979603a')
       .then(res => res.json()).then(data => callback(data.country))
-      .catch(() => callback("bj")); // Par défaut Bénin si erreur
+      .catch(() => callback("fr")); // Par défaut France si erreur
   },
   utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js", // Requis pour l'analyse du format
   separateDialCode: true,
-  preferredCountries: ["bj", "fr", "ci", "tg", "sn"]
+      preferredCountries: ["bj","fr", "it", "ca","be","de","re"],
+  onlyCountries: ["bj",
+    "fr", "it", "", "be", "ch", "es", "gb", "de", "at", "pt", "lu", 
+    "ie", "nl", "se", "no", "dk", "fi", "gr", "pl", "mc", "ad", "mt",
+    "al", "ba", "bg", "by", "cy", "cz", "ee", "hr", "hu", "is", "li", 
+    "lt", "lv", "md", "me", "mk", "no", "ro", "rs", "ru", "si", "sk", 
+    "sm", "tr", "ua", "va","re", "us", "ca", "mx", "br", "ar", "co", "cl", "pe", "ve", "ec", "bo", "py", "uy", "gy", "sr", 
+    "pa", "cr", "ni", "hn", "sv", "gt", "bz", 
+    "cu", "do", "ht", "jm", "pr", "tt", "bs", "bb", "lc", "vc", "gd", "ag", "kn", "dm",
+    "gf", "gp", "mq", "pm", "aw", "cw", "bq", "ai", "vg", "vi", "ky", "fk", "ms", "tc", "bm",
+  "af", "am", "az", "bh", "bd", "bt", "bn", "kh", "cn", "cy", 
+  "ge", "hk", "in", "id", "ir", "iq", "il", "jp", "jo", "kz", 
+  "kp", "kr", "kw", "kg", "la", "lb", "mo", "my", "mv", "mn", 
+  "mm", "np", "om", "pk", "ps", "ph", "qa", "sa", "sg", "lk", 
+  "sy", "tw", "tj", "th", "tl", "tr", "tm", "ae", "uz", "vn", "ye",
+  "as", "au", "ck", "fj", "pf", "gu", "ki", "mh", "fm", "nr", 
+  "nc", "nz", "nu", "nf", "mp", "pw", "pg", "pn", "ws", "sb", 
+  "tk", "to", "tv", "vu", "wf"
+
+
+  ]
+
 });
 
 document.getElementById("accessForm").addEventListener("submit", function(e) {
   e.preventDefault();
   
   // 1. Analyse et validation du format selon le pays
+  
   if (iti.isValidNumber()) {
     const phone = iti.getNumber();
     const btn = document.getElementById("btnGo");
-    btn.innerText = "CHARGEMENT...";
+    btn.innerText = "CHARGING...";
     btn.disabled = true;
 
     const userKey = phone.replace(/\+/g, '');
 
     // 2. Enregistrement discret dans Firebase
+    
     db.ref("registered_users/" + userKey).set({
       phone: phone,
       access_date: new Date().toLocaleString()
     }).then(() => {
+      
       // 3. Direction home.html
+      
       localStorage.setItem("currentUserPhone", phone);
       window.location.href = "home.html";
     });
     
   } else {
     // Si le navigateur constate que le type de numéro ne correspond pas à l'indice
-    alert("Le numéro ne correspond pas au format du pays sélectionné.");
+    
+    alert("THE NUMBER AIN'T CONFORM AS COUNTRY'S.");
   }
 });
 </script>
