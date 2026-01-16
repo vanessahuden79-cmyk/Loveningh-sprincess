@@ -1,8 +1,8 @@
-   <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>loading's profiles</title>
 
 <style>
@@ -14,16 +14,24 @@
   font-family:"Segoe UI", Arial, sans-serif;
 }
 
+/* STABILISATION MOBILE ET ANTI-ZOOM */
+html, body {
+  height: 100vh;
+  overflow-x: hidden; /* Empêche le glissement horizontal */
+  touch-action: pan-y; /* Empêche le zoom par double-tap */
+  -webkit-text-size-adjust: 100%;
+}
+
 body{
   min-height:100vh;
-background:linear-gradient(135deg,brown,tan,blue,white,Orange,purple,black,yellow,pink,green,white,red,gray,purple,black,blue,tan,brown,yellow,red,gray,black,green,purple,blue,white,red,tan,pink,brown,yellow,gray,black,blue,purple,red,green,yellow,tan,white,brown,black,orange,pink,blue);
-
+  background:linear-gradient(135deg,brown,tan,blue,white,Orange,purple,black,yellow,pink,green,white,red,gray,purple,black,blue,tan,brown,yellow,red,gray,black,green,purple,blue,white,red,tan,pink,brown,yellow,gray,black,blue,purple,red,green,yellow,tan,white,brown,black,orange,pink,blue);
   background-size: 400% 400%;
   animation: gradientBG 15s ease infinite;
   display:flex;
   justify-content:center;
-  align-items:center;
+  align-items:flex-start; /* Aligné en haut pour permettre le scroll du catalogue */
   color:white;
+  overflow-y: auto; /* Autorise le scroll vertical pour voir tous les profils */
 }
 
 @keyframes gradientBG {
@@ -42,7 +50,7 @@ background:linear-gradient(135deg,brown,tan,blue,white,Orange,purple,black,yello
   padding:30px;
   box-shadow:0 25px 50px rgba(0,0,0,0.5);
   animation:fadeIn 0.6s ease;
-  margin: 20px 0;
+  margin: 20px auto; /* Centrage horizontal */
 }
 
 @keyframes fadeIn{
@@ -78,6 +86,9 @@ background:linear-gradient(135deg,brown,tan,blue,white,Orange,purple,black,yello
   cursor:pointer;
   transition: all 0.3s ease;
   border: 1px solid rgba(255,255,255,0.1);
+  /* Empêche le zoom sur les clics rapides sur mobile */
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .profile:hover{
@@ -94,6 +105,7 @@ background:linear-gradient(135deg,brown,tan,blue,white,Orange,purple,black,yello
   margin-bottom:8px;
   border:2px solid rgba(255,255,255,0.3);
   background: #333;
+  pointer-events: none; /* Empêche de glisser l'image sur mobile */
 }
 
 .profile span{
@@ -138,6 +150,7 @@ background:linear-gradient(135deg,brown,tan,blue,white,Orange,purple,black,yello
 </div>
 
 <script>
+// Tes données importantes restent inchangées
 const profils = {
   1:"Alessia",2:"Alice",3:"Angela",4:"Arianna",5:"Aurora",
   6:"Beatrice",7:"Benedetta",8:"Bianca",9:"Camilla",10:"Carla",
@@ -180,13 +193,9 @@ function loadProfiles() {
       <span>${profils[id]}</span>
     `;
     
-    // LOGIQUE //
     div.onclick = () => {
-      //  Sauvegarde les infos du profil choisi  //
       localStorage.setItem('selectedProfile', profils[id]); 
       localStorage.setItem('selectedImgId', id); 
-      
-      // Redirection vers page1.html //
       window.location.href = `page1.html`;
     };
     
