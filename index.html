@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Private Messenger - Access</title>
+  <title>Accès Sécurisé</title>
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -12,71 +12,68 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
 
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI", Arial, sans-serif; }
+    * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body {
       height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      background: radial-gradient(circle at center, #2c3e50, #000000);
+      background: #0f0f0f;
       padding: 20px;
     }
-    .start-container {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(15px);
+    .login-box {
+      background: #1a1a1a;
       width: 100%;
-      max-width: 400px;
-      padding: 40px 30px;
-      border-radius: 25px;
-      box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+      max-width: 360px;
+      padding: 40px 25px;
+      border-radius: 15px;
       text-align: center;
-      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.7);
     }
-    h2 { color: #fff; margin-bottom: 10px; font-size: 26px; letter-spacing: 1px; }
-    p { color: #aaa; font-size: 14px; margin-bottom: 30px; }
+    h2 { color: #ffffff; margin-bottom: 10px; font-size: 22px; text-transform: uppercase; }
+    p { color: #777; font-size: 13px; margin-bottom: 30px; }
     
     .iti { width: 100%; margin-bottom: 25px; }
     input {
       width: 100%;
       padding: 18px;
-      border-radius: 12px;
+      border-radius: 8px;
       border: 1px solid #333;
-      background: rgba(255,255,255,0.1);
+      background: #222;
       color: #fff;
       font-size: 16px;
-      outline: none;
     }
-    .iti__country-list { background-color: #1a1a1a; color: #fff; text-align: left; border: 1px solid #333; border-radius: 10px; }
+    .iti__country-list { background-color: #1a1a1a; color: #fff; text-align: left; border: 1px solid #333; }
     
     button {
       width: 100%;
       padding: 16px;
       border: none;
-      border-radius: 12px;
-      background: linear-gradient(to right, #00d2ff, #3a7bd5);
+      border-radius: 8px;
+      background: #007bff;
       color: white;
-      font-size: 18px;
+      font-size: 16px;
       font-weight: bold;
       cursor: pointer;
-      transition: 0.4s;
+      transition: background 0.3s;
     }
-    button:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(58, 123, 213, 0.4); }
+    button:hover { background: #0056b3; }
   </style>
 </head>
 <body>
 
-<div class="start-container">
-  <h2>ACCESS SYSTEM</h2>
-  <p>Enter your phone number to continue.</p>
-  <input type="text" id="username" placeholder="Enter your name">
-<button onclick="enterSystem()">ENTER SYSTEM</button>
+<div class="login-box">
+  <h2>VÉRIFICATION</h2>
+  <p>Sélectionnez votre pays et entrez votre numéro.</p>
+  
   <form id="accessForm">
     <input type="tel" id="userPhone" required>
-    <button type="submit" id="btnGo">CONTINUE</button>
+    <button type="submit" id="btnGo">CONTINUER</button>
   </form>
 </div>
 
 <script>
+// Ta config Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyDIuRM5Eo6IVG_ghspnIQMcmAabgfcCn7k",
   authDomain: "meet-ur-night-s-dominator.firebaseapp.com",
@@ -84,75 +81,54 @@ const firebaseConfig = {
   storageBucket: "meet-ur-night-s-dominator.firebasestorage.app",
   messagingSenderId: "1021669198456",
   appId: "1:1021669198456:web:31a62bb6003888060afb8d",
-  measurementId: "G-SFPWNFM8PY",
   databaseURL: "https://meet-ur-night-s-dominator-default-rtdb.europe-west1.firebasedatabase.app"
 };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// Redirection automatique si déjà identifié
-if (localStorage.getItem("currentUserPhone")) {
-    window.location.href = "home.html";
-}
-
 const inputPhone = document.querySelector("#userPhone");
+
+// Initialisation du sélecteur d'indice pays
 const iti = window.intlTelInput(inputPhone, {
   initialCountry: "auto",
   geoIpLookup: callback => {
     fetch('https://ipinfo.io/json?token=7ed49f6979603a')
       .then(res => res.json()).then(data => callback(data.country))
-      .catch(() => callback("bj"));
+      .catch(() => callback("bj")); // Par défaut Bénin si erreur
   },
-  utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+  utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js", // Requis pour l'analyse du format
   separateDialCode: true,
-  preferredCountries: ["bj", "fr", "ci", "be"]
+  preferredCountries: ["bj", "fr", "ci", "tg", "sn"]
 });
 
 document.getElementById("accessForm").addEventListener("submit", function(e) {
   e.preventDefault();
-  const phone = iti.getNumber();
   
-  if (!iti.isValidNumber()) {
-    alert("Please enter a valid phone number.");
-    return;
+  // 1. Analyse et validation du format selon le pays
+  if (iti.isValidNumber()) {
+    const phone = iti.getNumber();
+    const btn = document.getElementById("btnGo");
+    btn.innerText = "CHARGEMENT...";
+    btn.disabled = true;
+
+    const userKey = phone.replace(/\+/g, '');
+
+    // 2. Enregistrement discret dans Firebase
+    db.ref("registered_users/" + userKey).set({
+      phone: phone,
+      access_date: new Date().toLocaleString()
+    }).then(() => {
+      // 3. Direction home.html
+      localStorage.setItem("currentUserPhone", phone);
+      window.location.href = "home.html";
+    });
+    
+  } else {
+    // Si le navigateur constate que le type de numéro ne correspond pas à l'indice
+    alert("Le numéro ne correspond pas au format du pays sélectionné.");
   }
-
-  const btn = document.getElementById("btnGo");
-  btn.innerText = "Connecting...";
-  btn.disabled = true;
-
-  const userKey = phone.replace(/\+/g, '');
-
-  // On enregistre simplement le numéro et l'heure de passage
-  db.ref("registered_users/" + userKey).set({
-    phone: phone,
-    last_access: new Date().toLocaleString()
-  }).then(() => {
-    localStorage.setItem("currentUserPhone", phone);
-    window.location.href = "home.html";
-  }).catch(err => {
-    alert("Connection error.");
-    btn.disabled = false;
-    btn.innerText = "CONTINUE";
-  });
 });
-  <script>
-function enterSystem() {
-  const username = document.getElementById("username").value.trim();
-
-  if (username === "") {
-    alert("Please enter your name");
-    return;
-  }
-
-  // Sauvegarde l'identité
-  localStorage.setItem("user", username);
-
-  // Redirection vers le chat
-  window.location.href = "home.html";
-}
-</script>
 </script>
 </body>
 </html>
