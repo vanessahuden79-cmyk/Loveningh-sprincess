@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
@@ -13,14 +13,23 @@
 
   <style>
     * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body {
+    
+    /* STABILISATION DE LA PAGE */
+    html, body {
       height: 100vh;
+      overflow: hidden; /* Empêche le scroll parasite de la page entière */
+      touch-action: pan-y; /* Empêche le zoom par double-tap */
+      -webkit-text-size-adjust: 100%;
+      background: #0f0f0f;
+    }
+
+    body {
       display: flex;
       justify-content: center;
       align-items: center;
-      background: #0f0f0f;
       padding: 20px;
     }
+
     .login-box {
       background: #1a1a1a;
       width: 100%;
@@ -30,10 +39,13 @@
       text-align: center;
       box-shadow: 0 15px 35px purple;
     }
+
     h2 { color: #ffffff; margin-bottom: 10px; font-size: 22px; text-transform: uppercase; }
     p { color: yellow; font-size: 13px; margin-bottom: 30px; }
     
     .iti { width: 100%; margin-bottom: 25px; }
+    
+    /* TAILLE 16PX POUR EVITER ZOOM AUTOMATIQUE IPHONE */
     input {
       width: 100%;
       padding: 18px;
@@ -41,8 +53,10 @@
       border: 1px solid #333;
       background: #222;
       color: white;
-      font-size: 16px;
+      font-size: 16px !important; 
+      outline: none;
     }
+
     .iti__country-list { background-color: #1a1a1a; color: #fff; text-align: left; border: 1px solid #333; }
     
     button {
@@ -73,9 +87,6 @@
 </div>
 
 <script>
-  
-// Ta config Firebase
-
 const firebaseConfig = {
   apiKey: "AIzaSyDIuRM5Eo6IVG_ghspnIQMcmAabgfcCn7k",
   authDomain: "meet-ur-night-s-dominator.firebaseapp.com",
@@ -91,70 +102,47 @@ const db = firebase.database();
 
 const inputPhone = document.querySelector("#userPhone");
 
-// Initialisation du sélecteur d'indice pays
-
 const iti = window.intlTelInput(inputPhone, {
   initialCountry: "auto",
   geoIpLookup: callback => {
     fetch('https://ipinfo.io/json?token=7ed49f6979603a')
       .then(res => res.json()).then(data => callback(data.country))
-      .catch(() => callback("fr")); // Par défaut France si erreur
+      .catch(() => callback("fr"));
   },
-  utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js", // Requis pour l'analyse du format
+  utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
   separateDialCode: true,
-      preferredCountries: ["bj","fr", "it", "ca","be","de","re"],
-  onlyCountries: ["bj",
-    "fr", "it", "", "be", "ch", "es", "gb", "de", "at", "pt", "lu", 
+  preferredCountries: ["bj","fr", "it", "ca","be","de","re"],
+  onlyCountries: ["bj","fr", "it", "be", "ch", "es", "gb", "de", "at", "pt", "lu", 
     "ie", "nl", "se", "no", "dk", "fi", "gr", "pl", "mc", "ad", "mt",
     "al", "ba", "bg", "by", "cy", "cz", "ee", "hr", "hu", "is", "li", 
-    "lt", "lv", "md", "me", "mk", "no", "ro", "rs", "ru", "si", "sk", 
+    "lt", "lv", "md", "me", "mk", "ro", "rs", "ru", "si", "sk", 
     "sm", "tr", "ua", "va","re", "us", "ca", "mx", "br", "ar", "co", "cl", "pe", "ve", "ec", "bo", "py", "uy", "gy", "sr", 
-    "pa", "cr", "ni", "hn", "sv", "gt", "bz", 
-    "cu", "do", "ht", "jm", "pr", "tt", "bs", "bb", "lc", "vc", "gd", "ag", "kn", "dm",
+    "pa", "cr", "ni", "hn", "sv", "gt", "bz", "cu", "do", "ht", "jm", "pr", "tt", "bs", "bb", "lc", "vc", "gd", "ag", "kn", "dm",
     "gf", "gp", "mq", "pm", "aw", "cw", "bq", "ai", "vg", "vi", "ky", "fk", "ms", "tc", "bm",
-  "af", "am", "az", "bh", "bd", "bt", "bn", "kh", "cn", "cy", 
-  "ge", "hk", "in", "id", "ir", "iq", "il", "jp", "jo", "kz", 
-  "kp", "kr", "kw", "kg", "la", "lb", "mo", "my", "mv", "mn", 
-  "mm", "np", "om", "pk", "ps", "ph", "qa", "sa", "sg", "lk", 
-  "sy", "tw", "tj", "th", "tl", "tr", "tm", "ae", "uz", "vn", "ye",
-  "as", "au", "ck", "fj", "pf", "gu", "ki", "mh", "fm", "nr", 
-  "nc", "nz", "nu", "nf", "mp", "pw", "pg", "pn", "ws", "sb", 
-  "tk", "to", "tv", "vu", "wf"
-
-
+    "af", "am", "az", "bh", "bd", "bt", "bn", "kh", "cn", "cy", "ge", "hk", "in", "id", "ir", "iq", "il", "jp", "jo", "kz", 
+    "kp", "kr", "kw", "kg", "la", "lb", "mo", "my", "mv", "mn", "mm", "np", "om", "pk", "ps", "ph", "qa", "sa", "sg", "lk", 
+    "sy", "tw", "tj", "th", "tl", "tr", "tm", "ae", "uz", "vn", "ye",
+    "as", "au", "ck", "fj", "pf", "gu", "ki", "mh", "fm", "nr", "nc", "nz", "nu", "nf", "mp", "pw", "pg", "pn", "ws", "sb", 
+    "tk", "to", "tv", "vu", "wf"
   ]
-
 });
 
 document.getElementById("accessForm").addEventListener("submit", function(e) {
   e.preventDefault();
-  
-  // 1. Analyse et validation du format selon le pays
-  
   if (iti.isValidNumber()) {
     const phone = iti.getNumber();
     const btn = document.getElementById("btnGo");
     btn.innerText = "CHARGING...";
     btn.disabled = true;
-
     const userKey = phone.replace(/\+/g, '');
-
-    // 2. Enregistrement discret dans Firebase
-    
     db.ref("registered_users/" + userKey).set({
       phone: phone,
       access_date: new Date().toLocaleString()
     }).then(() => {
-      
-      // 3. Direction home.html
-      
       localStorage.setItem("currentUserPhone", phone);
       window.location.href = "home.html";
     });
-    
   } else {
-    // Si le navigateur constate que le type de numéro ne correspond pas à l'indice
-    
     alert("THE NUMBER AIN'T CONFORM AS COUNTRY'S.");
   }
 });
