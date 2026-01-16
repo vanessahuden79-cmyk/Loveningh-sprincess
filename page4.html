@@ -16,26 +16,31 @@
 
   /* DASHBOARD STRUCTURE */
   #dashboard{display:none;height:100vh;width:100%;}
-  .sidebar{width:88px;background:dimgray;color:white;display:flex;flex-direction:column;border-right:1px solid dimgray;}
-  .sidebar h1{text-align:center;padding:20px;background:dimgray;font-size:18px;letter-spacing: 1px;}
+  .sidebar{width:110px;background:dimgray;color:white;display:flex;flex-direction:column;border-right:1px solid #444;}
+  .sidebar h1{text-align:center;padding:15px 5px;background:dimgray;font-size:12px;letter-spacing: 1px;border-bottom:1px solid yellow;}
   #userList{flex:1;overflow-y:auto;}
   
-  .user-item{display:flex;align-items:center;padding:15px;border-bottom:1px solid yellow;cursor:pointer;transition:0.2s;}
-  .user-item:hover{background:red;}
-  .user-item.active{background:dimgray; border-left: 5px solid black;}
-  .user-item img{width:45px;height:45px;border-radius:50%;margin-right:12px;object-fit:cover;background: dimgray;}
+  .user-item{display:flex;flex-direction:column;align-items:center;padding:15px 5px;border-bottom:1px solid #555;cursor:pointer;transition:0.2s;position:relative;text-align:center;}
+  .user-item:hover{background:rgba(255,0,0,0.3);}
+  .user-item.active{background:#333; border-left: 4px solid yellow;}
+  .user-item img{width:50px;height:50px;border-radius:50%;margin-bottom:8px;object-fit:cover;background: #222; border: 1px solid transparent;}
+  .user-item.new-msg img { border-color: #25d366; box-shadow: 0 0 10px #25d366; }
+  
+  /* Badge Nouveau Message */
+  .badge-new { position: absolute; top: 10px; right: 20px; width: 12px; height: 12px; background: #25d366; border-radius: 50%; display: none; border: 2px solid dimgray; }
+  .user-item.new-msg .badge-new { display: block; }
 
   .chat-container{flex:1;display:flex;flex-direction:column;background:dimgray; position: relative;}
   
   /* CHAT HEADER */
-  .chat-header{display:flex;align-items:center;padding:10px 20px;background:tan;color:black;height:70px;box-shadow: 0 2px 5px purple;}
+  .chat-header{display:flex;align-items:center;padding:10px 20px;background:tan;color:black;height:70px;box-shadow: 0 2px 5px rgba(0,0,0,0.5);}
   .chat-header img{width:50px;height:50px;border-radius:50%;margin-right:15px;object-fit:cover;border: 2px solid Orange;}
   
   /* CHAT BODY */
   .chat-body{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
-  .msg{max-width:70%;padding:10px 15px;border-radius:15px;font-size:14px;word-wrap:break-word;box-shadow:0 1px 2px yellow; position: relative;}
+  .msg{max-width:70%;padding:10px 15px;border-radius:15px;font-size:14px;word-wrap:break-word;box-shadow:0 1px 2px rgba(0,0,0,0.3); position: relative;}
   .left{background:ivory;align-self:flex-start;border-top-left-radius:0;}
-  .right{background:burlywood;align-self:flex-end;border-top-right-radius:20;}
+  .right{background:burlywood;align-self:flex-end;border-top-right-radius:0;}
   .msg img{max-width:100%;border-radius:10px;margin-top:5px;display:block;cursor: zoom-in;}
   .scan-label { color: #d32f2f; font-weight: bold; font-size: 11px; display: block; margin-bottom: 4px; border-bottom: 1px solid blue; padding-bottom: 2px; }
 
@@ -44,48 +49,10 @@
   .chat-input input{flex:1;padding:12px 20px;border-radius:25px;border:1px solid MediumSpringGreen;outline:none;}
   .chat-input button{width:45px;height:45px;border:none;border-radius:50%;background:orange;color:black;cursor:pointer;display:flex;justify-content:center;align-items:center; transition: 0.2s;}
 
-  #localVideo, #remoteVideo{position:fixed;bottom:80px;right:20px;width:180px;border:3px solid red;border-radius:12px;z-index:500;background:black;display:none;}
-  #remoteVideo{bottom:80px;right:210px;}
-
-  /* --- MODAL ZOOM PLEIN ÉCRAN --- */
-  #imageModal {
-    display: none; 
-    position: fixed; 
-    z-index: 2000; 
-    left: 0; top: 0; 
-    width: 100%; height: 100%; 
-    background-color: rgba(0,0,0,0.9);
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-  }
-  #modalImg {
-    max-width: 95%;
-    max-height: 80%;
-    border: 2px solid white;
-    border-radius: 5px;
-    object-fit: contain;
-  }
-  #closeModal {
-    position: absolute;
-    top: 20px;
-    right: 30px;
-    color: white;
-    font-size: 40px;
-    font-weight: bold;
-    cursor: pointer;
-  }
-  #downloadBtn {
-    margin-top: 20px;
-    background: #25d366;
-    color: white;
-    padding: 12px 25px;
-    border-radius: 30px;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 16px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-  }
+  #imageModal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.95); justify-content: center; align-items: center; flex-direction: column; }
+  #modalImg { max-width: 95%; max-height: 80%; border: 1px solid white; object-fit: contain; }
+  #closeModal { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; }
+  #downloadBtn { margin-top: 20px; background: #25d366; color: white; padding: 12px 25px; border-radius: 30px; text-decoration: none; font-weight: bold; }
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -104,7 +71,7 @@
 
 <div id="dashboard">
   <div class="sidebar">
-    <h1>ACTIVE SESSION</h1>
+    <h1>SESSIONS</h1>
     <div id="userList"></div>
   </div>
 
@@ -112,17 +79,17 @@
     <div class="chat-header">
       <img id="profileImg" src="https://via.placeholder.com/50">
       <div style="flex:1">
-        <h3 id="profileName">CLIENT'S SELECTION</h3>
-        <small id="profileId" style="opacity: 0.8;"></small>
+        <h3 id="profileName" style="font-size:14px;">SELECT CLIENT</h3>
+        <small id="profileId" style="opacity: 0.8; font-size:10px;"></small>
       </div>
-      <button id="callBtn" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">🎥</button>
+      <button id="callBtn">🎥</button>
     </div>
 
     <div class="chat-body" id="chatBody"></div>
 
     <div class="chat-input">
-      <button id="photoBtn" style="background:#128c7e; border:none; border-radius:50%; width:40px; height:40px; color:white; cursor:pointer;">📷</button>
-      <input type="text" id="textInput" placeholder="Write a message to client...">
+      <button id="photoBtn">📷</button>
+      <input type="text" id="textInput" placeholder="Message...">
       <button id="sendBtn">➤</button>
       <input type="file" id="photoInput" accept="image/*" hidden>
     </div>
@@ -131,15 +98,11 @@
 
 <div id="imageModal">
   <span id="closeModal">&times;</span>
-  <img id="modalImg" src="">
-  <a id="downloadBtn" download="admin_capture.jpg">📥 DOWNLOAD IMAGE</a>
+  <img id="modalImg">
+  <a id="downloadBtn" download="admin_capture.jpg">📥 DOWNLOAD</a>
 </div>
 
-<video id="localVideo" autoplay muted playsinline></video>
-<video id="remoteVideo" autoplay playsinline></video>
-
 <script>
-// ==== CONFIGURATION FIREBASE ====
 const firebaseConfig = {
   apiKey: "AIzaSyDIuRM5Eo6IVG_ghspnIQMcmAabgfcCn7k",
   authDomain: "meet-ur-night-s-dominator.firebaseapp.com",
@@ -147,7 +110,7 @@ const firebaseConfig = {
   storageBucket: "meet-ur-night-s-dominator.firebasestorage.app",
   messagingSenderId: "1021669198456",
   appId: "1:1021669198456:web:31a62bb6003888060afb8d",
-  measurementId: "G-SFPWNFM8PY",
+  measurementId: "G-SFPWNFMBPY",
   databaseURL: "https://meet-ur-night-s-dominator-default-rtdb.europe-west1.firebasedatabase.app"
 };
 
@@ -156,46 +119,31 @@ const db = firebase.database();
 const auth = firebase.auth();
 const notificationSound = new Audio('https://www.soundjay.com/buttons/beep-07a.mp3');
 
-// ==== FONCTIONS ZOOM ====
+let currentConvKey = null;
+let currentUserData = null;
+
+// ZOOM PLEIN ÉCRAN
 window.openZoom = function(src) {
-  const modal = document.getElementById("imageModal");
-  const modalImg = document.getElementById("modalImg");
-  const downloadBtn = document.getElementById("downloadBtn");
-  modal.style.display = "flex";
-  modalImg.src = src;
-  downloadBtn.href = src;
+  document.getElementById("imageModal").style.display = "flex";
+  document.getElementById("modalImg").src = src;
+  document.getElementById("downloadBtn").href = src;
 };
+document.getElementById("closeModal").onclick = () => document.getElementById("imageModal").style.display = "none";
 
-document.getElementById("closeModal").onclick = () => {
-  document.getElementById("imageModal").style.display = "none";
-};
-
-document.getElementById("imageModal").onclick = (e) => {
-  if(e.target.id === "imageModal") {
-    document.getElementById("imageModal").style.display = "none";
-  }
-};
-
-// ==== AUTHENTIFICATION SÉCURISÉE ====
+// AUTH
 document.getElementById("loginBtn").onclick = () => {
   const email = document.getElementById("adminEmail").value;
   const password = document.getElementById("adminPassword").value;
-  const errorMsg = document.getElementById("errorMsg");
-
-  errorMsg.textContent = "Connecting...";
-
   auth.signInWithEmailAndPassword(email, password)
-    .then((userCredential) => {
+    .then(() => {
       document.getElementById("loginAdmin").style.display = "none";
       document.getElementById("dashboard").style.display = "flex";
       initDashboard();
     })
-    .catch((error) => {
-      errorMsg.textContent = "❌ Error: " + error.message;
-    });
+    .catch(err => document.getElementById("errorMsg").textContent = "❌ " + err.message);
 };
 
-// ==== CRYPTAGE ====
+// CRYPTAGE
 function utf8_to_b64(str){ return btoa(unescape(encodeURIComponent(str))); }
 function b64_to_utf8(str){ try{ return decodeURIComponent(escape(atob(str))); } catch(e){return str;} }
 function encrypt(text,key){ return utf8_to_b64(key+"::"+text); }
@@ -203,72 +151,69 @@ function decrypt(cipher,key){
   try{ 
     let decoded = b64_to_utf8(cipher);
     return decoded.includes("::") ? decoded.split("::")[1] : decoded;
-  } catch(e){ return "Encrypted Message"; } 
+  } catch(e){ return "Message..."; } 
 }
-function getStaticKey(email, imgNum) { 
-  let cleanEmail = email || "unknown";
-  return btoa(cleanEmail + "_KEY_" + imgNum).slice(0, 16); 
-}
+function getStaticKey(email, imgNum) { return btoa((email || "unknown") + "_KEY_" + imgNum).slice(0, 16); }
 
-// ==== LOGIQUE DASHBOARD ====
-let currentConvKey = null;
-let currentUserData = null;
-
+// LOGIQUE DASHBOARD (TRI PAR NOUVEAUTÉ)
 function initDashboard() {
   db.ref("active_sessions").on("value", snap => {
     const userList = document.getElementById("userList");
     const users = snap.val();
-    if(!users) { userList.innerHTML = "<p style='padding:20px; text-align:center; opacity:0.5;'>No active sessions</p>"; return; }
+    if(!users) return;
     
+    // Conversion en tableau pour trier
+    let userArray = [];
+    for(let key in users) userArray.push({ id: key, ...users[key] });
+
+    // TRI : Les plus récents (lastTimestamp) en haut
+    userArray.sort((a, b) => (b.lastTimestamp || 0) - (a.lastTimestamp || 0));
+
     userList.innerHTML = "";
-    for(let key in users){
-      const u = users[key];
-      const profilImgNum = u.imgNum || "1"; 
+    userArray.forEach(u => {
+      const isNew = (u.lastFrom === "user") ? "new-msg" : "";
       const div = document.createElement("div");
-      div.className = "user-item" + (currentConvKey === key ? " active" : "");
+      div.className = `user-item ${isNew} ${currentConvKey === u.id ? 'active' : ''}`;
       div.innerHTML = `
-        <img src="IMAGE/img${profilImgNum}.jpg" onerror="this.src='https://via.placeholder.com/50'">
-        <div>
-          <div style="font-weight:bold">${u.name || 'User'}</div>
-          <div style="font-size:11px; opacity:0.7">${u.userEmail}</div>
-        </div>
+        <div class="badge-new"></div>
+        <img src="IMAGE/img${u.imgNum || 1}.jpg" onerror="this.src='https://via.placeholder.com/50'">
+        <div style="font-size:10px; font-weight:bold; color:white; overflow:hidden; width:80px;">${u.name || 'User'}</div>
       `;
-      div.onclick = () => selectUser(key, u);
+      div.onclick = () => selectUser(u.id, u);
       userList.appendChild(div);
-    }
+    });
   });
 }
 
 function selectUser(key, userData) {
   currentConvKey = key;
   currentUserData = userData;
-  document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
-  const profilImgNum = userData.imgNum || "1";
+  // Quand on clique, on considère qu'on a vu le message
+  if(userData.lastFrom === "user") {
+    db.ref("active_sessions/" + key).update({ lastFrom: "admin" });
+  }
   document.getElementById("profileName").textContent = userData.name;
   document.getElementById("profileId").textContent = userData.userEmail;
-  document.getElementById("profileImg").src = `IMAGE/img${profilImgNum}.jpg`;
+  document.getElementById("profileImg").src = `IMAGE/img${userData.imgNum || 1}.jpg`;
   listenToMessages(key, userData);
 }
 
 function listenToMessages(key, userData) {
   const chatBody = document.getElementById("chatBody");
-  const profilImgNum = userData.imgNum || "1";
-  const encryptionKey = getStaticKey(userData.userEmail, profilImgNum);
+  const encryptionKey = getStaticKey(userData.userEmail, userData.imgNum || "1");
   
   db.ref("messages/" + key).off(); 
   db.ref("messages/" + key).on("value", snap => {
     chatBody.innerHTML = "";
     const msgs = snap.val();
     if(!msgs) return;
-    let msgIds = Object.keys(msgs);
-    msgIds.forEach((mId, index) => {
+    Object.keys(msgs).forEach((mId, index) => {
       const m = msgs[mId];
       const d = document.createElement("div");
       d.className = "msg " + (m.from === "admin" ? "right" : "left");
       const content = decrypt(m.message, encryptionKey);
       if(content.startsWith("data:image")) {
         const label = (index === 0 && m.from === "user") ? "<span class='scan-label'>💳 [DEPOSIT SCAN]</span>" : "";
-        // Modification ici pour le clic zoom
         d.innerHTML = `${label}<img src="${content}" onclick="openZoom(this.src)">`;
       } else {
         d.textContent = content;
@@ -276,29 +221,25 @@ function listenToMessages(key, userData) {
       chatBody.appendChild(d);
     });
     chatBody.scrollTop = chatBody.scrollHeight;
-    const lastMsg = msgs[msgIds[msgIds.length - 1]];
-    if(lastMsg && lastMsg.from !== "admin") {
-        notificationSound.play().catch(()=>{});
-    }
   });
 }
-
-// ==== ENVOI MESSAGES ====
-document.getElementById("sendBtn").onclick = sendMessage;
-document.getElementById("textInput").onkeypress = (e) => { if(e.key === "Enter") sendMessage(); };
 
 function sendMessage() {
   const text = document.getElementById("textInput").value.trim();
   if(!text || !currentConvKey) return;
-  const profilImgNum = currentUserData.imgNum || "1";
-  const key = getStaticKey(currentUserData.userEmail, profilImgNum);
+  const key = getStaticKey(currentUserData.userEmail, currentUserData.imgNum || "1");
   db.ref("messages/" + currentConvKey).push({
     from: "admin",
     message: encrypt(text, key),
     timestamp: firebase.database.ServerValue.TIMESTAMP
   });
+  // Marquer comme répondu pour enlever le badge vert
+  db.ref("active_sessions/" + currentConvKey).update({ lastFrom: "admin" });
   document.getElementById("textInput").value = "";
 }
+
+document.getElementById("sendBtn").onclick = sendMessage;
+document.getElementById("textInput").onkeypress = (e) => { if(e.key === "Enter") sendMessage(); };
 
 document.getElementById("photoBtn").onclick = () => document.getElementById("photoInput").click();
 document.getElementById("photoInput").onchange = (e) => {
@@ -306,13 +247,13 @@ document.getElementById("photoInput").onchange = (e) => {
   if(!file || !currentConvKey) return;
   const reader = new FileReader();
   reader.onload = () => {
-    const profilImgNum = currentUserData.imgNum || "1";
-    const key = getStaticKey(currentUserData.userEmail, profilImgNum);
+    const key = getStaticKey(currentUserData.userEmail, currentUserData.imgNum || "1");
     db.ref("messages/" + currentConvKey).push({
       from: "admin",
       message: encrypt(reader.result, key),
       timestamp: firebase.database.ServerValue.TIMESTAMP
     });
+    db.ref("active_sessions/" + currentConvKey).update({ lastFrom: "admin" });
   };
   reader.readAsDataURL(file);
 };
