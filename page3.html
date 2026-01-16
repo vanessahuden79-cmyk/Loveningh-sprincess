@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Private Messenger</title>
+  <title>Privat messenger</title>
   
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <style>
-    /* On fixe le body pour éviter les rebonds bizarres sur mobile */
+    /* Structure identique à l'admin pour éviter les chevauchements */
     body { 
       margin:0; 
       font-family:"Segoe UI",Arial,sans-serif; 
@@ -20,7 +20,7 @@
       overflow:hidden; 
     }
     
-    /* Header fixe en haut */
+    /* Header fixe */
     .chat-header { 
       display:flex; 
       align-items:center; 
@@ -35,17 +35,16 @@
     }
     .chat-header img { width:45px; height:45px; border-radius:50%; object-fit:cover; border:2px solid green; }
     
-    /* ZONE DE MESSAGES : Comme sur l'admin */
+    /* Zone de messages flexible (comme sur l'admin) */
     .chat-body { 
-      flex: 1; /* Prend tout l'espace restant entre le header et l'input */
+      flex: 1; 
       padding: 15px; 
       display: flex; 
       flex-direction: column; 
       gap: 12px; 
       overflow-y: auto; 
       background: transparent;
-      /* On s'assure que le dernier message ne colle pas à l'input */
-      padding-bottom: 30px;
+      padding-bottom: 20px;
       scroll-behavior: smooth;
       -webkit-overflow-scrolling: touch;
     }
@@ -55,7 +54,7 @@
     .right { background:salmon; align-self:flex-end; border-top-right-radius:0; color: linen; }
     .msg img { max-width:100%; border-radius:10px; display:block; margin-top:5px; }
 
-    /* BARRE DE SAISIE : Fixée proprement en bas */
+    /* Input fixe en bas sans position:fixed pour ne pas cacher le contenu */
     .chat-input { 
       display:flex; 
       padding:10px; 
@@ -68,7 +67,6 @@
     .chat-input input { flex:1; padding:12px 15px; border-radius:25px; border:1px solid darkgray; outline:none; font-size: 16px; }
     .chat-input button { width:45px; height:45px; border:none; border-radius:50%; background:#25d366; color:white; font-size:18px; cursor:pointer; display:flex; justify-content:center; align-items:center; transition: 0.2s; }
     
-    /* Vidéo */
     #localVideo, #remoteVideo { position:fixed; top:80px; right:10px; width:100px; border:2px solid Orange; border-radius:10px; display:none; z-index:100; background:black; }
   </style>
 </head>
@@ -96,7 +94,7 @@
 <video id="remoteVideo" autoplay playsinline></video>
 
 <script>
-// --- CONFIGURATION FIREBASE ---
+// CONFIGURATION FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyDIuRM5Eo6IVG_ghspnIQMcmAabgfcCn7k",
   authDomain: "meet-ur-night-s-dominator.firebaseapp.com",
@@ -111,12 +109,12 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
+// PARAMÈTRES ET CLÉS
 const params = new URLSearchParams(location.search);
 const imgNum = params.get("img") || "1";
 const email = params.get("email") || "inconnu";
 const userKeySafe = email.replace(/\./g, '_');
 const convKey = imgNum + "_" + userKeySafe;
-
 const secretKey = btoa(email + "_KEY_" + imgNum).slice(0,16);
 
 // CRYPTAGE
@@ -137,18 +135,24 @@ document.getElementById("profileImg").src = `IMAGE/img${imgNum}.jpg`;
 document.getElementById("profileName").textContent = profils[imgNum] || "Profil";
 document.getElementById("profileId").textContent = email;
 
-// SYNC ADMIN
+// MISE À JOUR SESSION ADMIN
+db.ref("active_sessions/" + convKey).update({
+  name: profils[imgNum],
+  userEmail: email,
+  imgNum: imgNum, 
+  status: "online",
+  lastSeen: new Date().toLocaleString()
+});
+
+// FONCTION POUR REMONTER EN HAUT CHEZ L'ADMIN
 function updateAdminSort() {
   db.ref("active_sessions/" + convKey).update({
     lastTimestamp: firebase.database.ServerValue.TIMESTAMP,
-    lastFrom: "user",
-    name: profils[imgNum],
-    userEmail: email,
-    imgNum: imgNum
+    lastFrom: "user"
   });
 }
 
-// CHAT
+// GESTION DU CHAT
 const chatBody = document.getElementById("chatBody");
 
 function scrollBottom() {
@@ -161,6 +165,7 @@ function renderSingleMessage(m) {
   const d = document.createElement("div");
   d.className = "msg " + (m.from === "admin" ? "left" : "right");
   const content = decrypt(m.message, secretKey);
+  
   if (content.startsWith("data:image")) {
     d.innerHTML = `<img src="${content}">`;
   } else {
@@ -170,12 +175,32 @@ function renderSingleMessage(m) {
   scrollBottom();
 }
 
+let welcomeTriggered = false;
+
 db.ref("messages/" + convKey).on("child_added", (snap) => {
-  renderSingleMessage(snap.val());
+  const msgData = snap.val();
+  renderSingleMessage(msgData);
+
+  db.ref("messages/" + convKey).once("value", (allMsgs) => {
+    if (allMsgs.numChildren() === 1 && msgData.from === "user" && !welcomeTriggered) {
+      welcomeTriggered = true;
+      const welcomeText = "Hi sweetie! 🫦 I received your scan. My services are now unlocked for you. Tell me, what are you looking for tonight? 🥵👅";
+      setTimeout(() => {
+        db.ref("messages/" + convKey).push({
+          from: "admin",
+          message: encrypt(welcomeText, secretKey),
+          date: new Date().toLocaleString()
+        });
+      }, 1500);
+    }
+  });
 });
 
-// ENVOIS
-document.getElementById("sendBtn").onclick = () => {
+// ENVOI TEXTE
+document.getElementById("sendBtn").onclick = sendMessage;
+document.getElementById("textInput").onkeypress = (e) => { if(e.key === "Enter") sendMessage(); };
+
+function sendMessage() {
   const text = document.getElementById("textInput").value.trim();
   if(!text) return;
   db.ref("messages/" + convKey).push({
@@ -185,17 +210,18 @@ document.getElementById("sendBtn").onclick = () => {
   }).then(updateAdminSort);
   document.getElementById("textInput").value = "";
   scrollBottom();
-};
+}
 
+// ENVOI PHOTO
 document.getElementById("photoBtn").onclick = () => document.getElementById("photoInput").click();
 document.getElementById("photoInput").onchange = (e) => {
   const file = e.target.files[0];
   if(!file) return;
   const reader = new FileReader();
   reader.readAsDataURL(file);
-  reader.onload = (ev) => {
+  reader.onload = (event) => {
     const img = new Image();
-    img.src = ev.target.result;
+    img.src = event.target.result;
     img.onload = () => {
       const canvas = document.createElement('canvas');
       const MAX_WIDTH = 1000;
@@ -213,7 +239,31 @@ document.getElementById("photoInput").onchange = (e) => {
   };
 };
 
-// Auto-scroll au focus du clavier
+// WEBRTC
+let pc = null;
+const iceConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
+
+async function startCall(){
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
+    document.getElementById("localVideo").srcObject = stream;
+    document.getElementById("localVideo").style.display = "block";
+    pc = new RTCPeerConnection(iceConfig);
+    stream.getTracks().forEach(t => pc.addTrack(t, stream));
+    pc.ontrack = e => {
+      document.getElementById("remoteVideo").srcObject = e.streams[0];
+      document.getElementById("remoteVideo").style.display = "block";
+    };
+    pc.onicecandidate = e => {
+      if(e.candidate) db.ref("calls/"+convKey+"/candidates/user").push(JSON.stringify(e.candidate));
+    };
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    db.ref("calls/"+convKey).update({offer: JSON.stringify(offer), status: "calling"});
+  } catch(err) { alert("Caméra non accessible"); }
+}
+
+document.getElementById("callBtn").onclick = startCall;
 document.getElementById("textInput").addEventListener("focus", scrollBottom);
 </script>
 </body>
