@@ -2,24 +2,15 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Dashboard - Control Center</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",Arial,sans-serif;}
+  body{height:100vh;background:black;overflow:hidden;}
   
-  /* STABILISATION ANTI-ZOOM */
-  html, body {
-    height: 100vh;
-    overflow: hidden;
-    touch-action: pan-y; /* Empêche le zoom par double-tap */
-    -webkit-text-size-adjust: 100%;
-    background: black;
-  }
-
   /* LOGIN */
   #loginAdmin{height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;background:linear-gradient(135deg,red,blue);color:yellow;position:fixed;width:100%;z-index:1000;}
-  /* Taille 16px minimum pour éviter le zoom auto sur les inputs iOS */
-  #loginAdmin input{width:300px;padding:15px;border:none;border-radius:30px;margin-bottom:10px;font-size:16px !important;text-align:center;box-shadow: 0 4px 15px green; outline:none;}
+  #loginAdmin input{width:300px;padding:15px;border:none;border-radius:30px;margin-bottom:10px;font-size:16px;text-align:center;box-shadow: 0 4px 15px green;}
   #loginAdmin button{width:200px;padding:12px;border:none;border-radius:30px;background:green;color:white;font-weight:bold;cursor:pointer;transition: 0.3s;}
   #loginAdmin button:hover{background:deeppink; transform: scale(1.05);}
 
@@ -27,9 +18,9 @@
   #dashboard{display:none;height:100vh;width:100%;}
   .sidebar{width:110px;background:dimgray;color:white;display:flex;flex-direction:column;border-right:1px solid #444;}
   .sidebar h1{text-align:center;padding:15px 5px;background:dimgray;font-size:12px;letter-spacing: 1px;border-bottom:1px solid yellow;}
-  #userList{flex:1;overflow-y:auto; -webkit-overflow-scrolling: touch;}
+  #userList{flex:1;overflow-y:auto;}
   
-  .user-item{display:flex;flex-direction:column;align-items:center;padding:15px 5px;border-bottom:1px solid #555;cursor:pointer;transition:0.2s;position:relative;text-align:center; -webkit-tap-highlight-color: transparent;}
+  .user-item{display:flex;flex-direction:column;align-items:center;padding:15px 5px;border-bottom:1px solid #555;cursor:pointer;transition:0.2s;position:relative;text-align:center;}
   .user-item:hover{background:rgba(255,0,0,0.3);}
   .user-item.active{background:#333; border-left: 4px solid yellow;}
   .user-item img{width:50px;height:50px;border-radius:50%;margin-bottom:8px;object-fit:cover;background: #222; border: 1px solid transparent;}
@@ -46,17 +37,17 @@
   .chat-header img{width:50px;height:50px;border-radius:50%;margin-right:15px;object-fit:cover;border: 2px solid Orange;}
   
   /* CHAT BODY */
-  .chat-body{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:12px; -webkit-overflow-scrolling: touch;}
+  .chat-body{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
   .msg{max-width:70%;padding:10px 15px;border-radius:15px;font-size:14px;word-wrap:break-word;box-shadow:0 1px 2px rgba(0,0,0,0.3); position: relative;}
   .left{background:ivory;align-self:flex-start;border-top-left-radius:0;}
   .right{background:burlywood;align-self:flex-end;border-top-right-radius:0;}
   .msg img{max-width:100%;border-radius:10px;margin-top:5px;display:block;cursor: zoom-in;}
   .scan-label { color: #d32f2f; font-weight: bold; font-size: 11px; display: block; margin-bottom: 4px; border-bottom: 1px solid blue; padding-bottom: 2px; }
 
-  /* INPUT - 16px minimum ici aussi pour éviter le zoom lors de la rédaction */
+  /* INPUT */
   .chat-input{display:flex;padding:15px;background:black;gap:10px;align-items:center;}
-  .chat-input input{flex:1;padding:12px 20px;border-radius:25px;border:1px solid MediumSpringGreen;outline:none; font-size: 16px !important;}
-  .chat-input button{width:45px;height:45px;border:none;border-radius:50%;background:orange;color:black;cursor:pointer;display:flex;justify-content:center;align-items:center; transition: 0.2s; -webkit-tap-highlight-color: transparent;}
+  .chat-input input{flex:1;padding:12px 20px;border-radius:25px;border:1px solid MediumSpringGreen;outline:none;}
+  .chat-input button{width:45px;height:45px;border:none;border-radius:50%;background:orange;color:black;cursor:pointer;display:flex;justify-content:center;align-items:center; transition: 0.2s;}
 
   #imageModal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.95); justify-content: center; align-items: center; flex-direction: column; }
   #modalImg { max-width: 95%; max-height: 80%; border: 1px solid white; object-fit: contain; }
@@ -91,7 +82,7 @@
         <h3 id="profileName" style="font-size:14px;">SELECT CLIENT</h3>
         <small id="profileId" style="opacity: 0.8; font-size:10px;"></small>
       </div>
-      <button id="callBtn" style="background:none; border:none; font-size:20px; cursor:pointer;">🎥</button>
+      <button id="callBtn">🎥</button>
     </div>
 
     <div class="chat-body" id="chatBody"></div>
