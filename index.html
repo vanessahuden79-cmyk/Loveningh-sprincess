@@ -68,7 +68,8 @@
 <div class="start-container">
   <h2>ACCESS SYSTEM</h2>
   <p>Enter your phone number to continue.</p>
-  
+  <input type="text" id="username" placeholder="Enter your name">
+<button onclick="enterSystem()">ENTER SYSTEM</button>
   <form id="accessForm">
     <input type="tel" id="userPhone" required>
     <button type="submit" id="btnGo">CONTINUE</button>
@@ -136,6 +137,22 @@ document.getElementById("accessForm").addEventListener("submit", function(e) {
     btn.innerText = "CONTINUE";
   });
 });
+  <script>
+function enterSystem() {
+  const username = document.getElementById("username").value.trim();
+
+  if (username === "") {
+    alert("Please enter your name");
+    return;
+  }
+
+  // Sauvegarde l'identité
+  localStorage.setItem("user", username);
+
+  // Redirection vers le chat
+  window.location.href = "home.html";
+}
+</script>
 </script>
 </body>
 </html>
