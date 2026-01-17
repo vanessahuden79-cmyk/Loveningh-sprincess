@@ -150,7 +150,7 @@ body{
 </div>
 
 <script>
-// Tes données importantes restent inchangées
+// mes données importantes
 const profils = {
   1:"Alessia",2:"Alice",3:"Angela",4:"Arianna",5:"Aurora",
   6:"Beatrice",7:"Benedetta",8:"Bianca",9:"Camilla",10:"Carla",
@@ -196,7 +196,7 @@ function loadProfiles() {
     div.onclick = () => {
       localStorage.setItem('selectedProfile', profils[id]); 
       localStorage.setItem('selectedImgId', id); 
-      window.location.href = `page1.html`;
+      window.location.href = `flam.html`;
     };
     
     fragment.appendChild(div);
