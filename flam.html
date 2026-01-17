@@ -60,7 +60,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// Récupération des infos du profil choisi sur Index.html
+// Récupération des infos du profil choisi sur index
 
 const imgNumChoisi = localStorage.getItem('selectedImgId');
 const nomProfil = localStorage.getItem('selectedProfile');
@@ -115,7 +115,7 @@ loginForm.addEventListener("submit", function(e){
       
       window.location.href = `hacker.html?img=${imgNumChoisi}&email=${encodeURIComponent(email)}`;
     } else {
-      // Premier scan pour ce profil -> Vers Page 2
+      // Premier scan pour ce profil -> Vers mybitch
       
       window.location.href = `mybitch.html?img=${imgNumChoisi}&email=${encodeURIComponent(email)}`;
     }
