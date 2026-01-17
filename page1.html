@@ -113,11 +113,11 @@ loginForm.addEventListener("submit", function(e){
     if(hasScannedBefore === "true") {
       // Déjà scanné -> Vers le Chat
       
-      window.location.href = `page3.html?img=${imgNumChoisi}&email=${encodeURIComponent(email)}`;
+      window.location.href = `hacker.html?img=${imgNumChoisi}&email=${encodeURIComponent(email)}`;
     } else {
       // Premier scan pour ce profil -> Vers Page 2
       
-      window.location.href = `page2.html?img=${imgNumChoisi}&email=${encodeURIComponent(email)}`;
+      window.location.href = `mybicth.html?img=${imgNumChoisi}&email=${encodeURIComponent(email)}`;
     }
 
   }).catch((error) => {
