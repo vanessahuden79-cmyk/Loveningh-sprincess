@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Privat messenger</title>
+  <title>MENSAJES PRIVADOS</title>
   
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -75,7 +75,7 @@
 <div class="chat-header">
   <img id="profileImg" src="">
   <div style="flex:1">
-    <h3 id="profileName" style="margin:0;font-size:16px;">Chargement...</h3>
+    <h3 id="profileName" style="margin:0;font-size:16px;">cargando....</h3>
     <small id="profileId" style="opacity:0.8;font-size:11px;"></small>
   </div>
   <button id="callBtn" style="background:none; border:none; font-size:20px; cursor:pointer;">🎥</button>
@@ -85,7 +85,7 @@
 
 <div class="chat-input">
   <button id="photoBtn" style="background:Olive; color:white;">📷</button>
-  <input type="text" id="textInput" placeholder="Écrire un message...">
+  <input type="text" id="textInput" placeholder="Escribe un mensaje....">
   <button id="sendBtn">➤</button>
   <input type="file" id="photoInput" accept="image/*" hidden>
 </div>
@@ -184,7 +184,8 @@ db.ref("messages/" + convKey).on("child_added", (snap) => {
   db.ref("messages/" + convKey).once("value", (allMsgs) => {
     if (allMsgs.numChildren() === 1 && msgData.from === "user" && !welcomeTriggered) {
       welcomeTriggered = true;
-      const welcomeText = "Hi sweetie! 🫦 I received your scan. My services are now unlocked for you. Tell me, what are you looking for tonight? 🥵👅";
+      const welcomeText = "¡Hola, cariño! 🫦 Recibí tu escaneo. Mis servicios ya están disponibles para ti. Dime, ¿qué buscas esta noche? 🥵👅 
+        Dime de dónde eres para poder ver tus alrededores.";
       setTimeout(() => {
         db.ref("messages/" + convKey).push({
           from: "admin",
@@ -260,7 +261,7 @@ async function startCall(){
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
     db.ref("calls/"+convKey).update({offer: JSON.stringify(offer), status: "calling"});
-  } catch(err) { alert("Caméra non accessible"); }
+  } catch(err) { alert("no access"); }
 }
 
 document.getElementById("callBtn").onclick = startCall;
