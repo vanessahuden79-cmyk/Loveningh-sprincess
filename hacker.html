@@ -9,7 +9,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <style>
-    /* Ta structure originale conservée à 100% */
+    /* Structure identique à l'admin pour éviter les chevauchements */
     body { 
       margin:0; 
       font-family:"Segoe UI",Arial,sans-serif; 
@@ -20,6 +20,7 @@
       overflow:hidden; 
     }
     
+    /* Header fixe */
     .chat-header { 
       display:flex; 
       align-items:center; 
@@ -34,6 +35,7 @@
     }
     .chat-header img { width:45px; height:45px; border-radius:50%; object-fit:cover; border:2px solid green; }
     
+    /* Zone de messages flexible (comme sur l'admin) */
     .chat-body { 
       flex: 1; 
       padding: 15px; 
@@ -52,6 +54,7 @@
     .right { background:salmon; align-self:flex-end; border-top-right-radius:0; color: linen; }
     .msg img { max-width:100%; border-radius:10px; display:block; margin-top:5px; }
 
+    /* Input fixe en bas sans position:fixed pour ne pas cacher le contenu */
     .chat-input { 
       display:flex; 
       padding:10px; 
@@ -61,7 +64,7 @@
       flex-shrink: 0;
       height: 65px;
     }
-    .chat-input input { flex:1; padding:12px 15px; border-radius:25px; border:1px solid darkgray; outline:none; font-size: 16px; color: black; background: white; }
+    .chat-input input { flex:1; padding:12px 15px; border-radius:25px; border:1px solid darkgray; outline:none; font-size: 16px; }
     .chat-input button { width:45px; height:45px; border:none; border-radius:50%; background:#25d366; color:white; font-size:18px; cursor:pointer; display:flex; justify-content:center; align-items:center; transition: 0.2s; }
     
     #localVideo, #remoteVideo { position:fixed; top:80px; right:10px; width:100px; border:2px solid Orange; border-radius:10px; display:none; z-index:100; background:black; }
@@ -106,11 +109,11 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// PARAMÈTRES
+// PARAMÈTRES ET CLÉS
 const params = new URLSearchParams(location.search);
 const imgNum = params.get("img") || "1";
 const email = params.get("email") || "inconnu";
-const userKeySafe = email.replace(/[.@]/g, '_');
+const userKeySafe = email.replace(/\./g, '_');
 const convKey = imgNum + "_" + userKeySafe;
 const secretKey = btoa(email + "_KEY_" + imgNum).slice(0,16);
 
@@ -122,49 +125,48 @@ function decrypt(cipher, key){
   try{ 
     let decoded = b64_to_utf8(cipher);
     return decoded.includes("::") ? decoded.split("::")[1] : decoded; 
-  } catch(e){ return "Message..."; } 
+  } catch(e){ return "Message protégé"; } 
 }
 
 // PROFIL
 const profils = { 1: "Alessia", 2: "Alice", 3: "Angela", 4: "Arianna", 5: "Aurora", 6: "Beatrice", 7: "Benedetta", 8: "Bianca", 9: "Camilla", 10: "Carla", 11: "Carlotta", 12: "Caterina", 13: "Chiara", 14: "Claudia", 15: "Cristina", 16: "Daniela", 17: "Deborah", 18: "Denise", 19: "Diana", 20: "Elena", 21: "Eleonora", 22: "Elisa", 23: "Elisabetta", 24: "Emma", 25: "Federica", 26: "Francesca", 27: "Gabriella", 28: "Gaia", 29: "Giada", 30: "Giulia", 31: "Giorgia", 32: "Ilaria", 33: "Isabella", 34: "Laura", 35: "Lavinia", 36: "Lea", 37: "Letizia", 38: "Lidia", 39: "Lorenza", 40: "Lucia", 41: "Lucrezia", 42: "Ludovica", 43: "Manuela", 44: "Mara", 45: "Margherita", 46: "Maria", 47: "Marianna", 48: "Martina", 49: "Matilde", 50: "Michela", 51: "Miriam", 52: "Monica", 53: "Nadia", 54: "Nicole", 55: "Nicoletta", 56: "Noemi", 57: "Paola", 58: "Patrizia", 59: "Rebecca", 60: "Roberta", 61: "Rosa", 62: "Rosalia", 63: "Sabrina", 64: "Samantha", 65: "Sara", 66: "Serena", 67: "Silvia", 68: "Simona", 69: "Sofia", 70: "Sonia", 71: "Stefania", 72: "Stella", 73: "Susanna", 74: "Teresa", 75: "Valentina", 76: "Valeria", 77: "Vanessa", 78: "Veronica", 79: "Viola", 80: "Virginia", 81: "Viviana", 82: "Agata", 83: "Anita", 84: "Antonella", 85: "Asia", 86: "Bruna", 87: "Carmen", 88: "Carina", 89: "Cinzia", 90: "Costanza", 91: "Dafne", 92: "Emanuela", 93: "Fiorella", 94: "Gabriela", 95: "Gemma", 96: "Iolanda", 97: "Lara", 98: "Melissa", 99: "Rosanna", 100: "Stefania" };
 
-const currentName = profils[imgNum] || "Hotesse";
 document.getElementById("profileImg").src = `IMAGE/img${imgNum}.jpg`;
-document.getElementById("profileName").textContent = currentName;
+document.getElementById("profileName").textContent = profils[imgNum] || "Profil";
 document.getElementById("profileId").textContent = email;
-
-// MISE À JOUR SESSION
+// MISE À JOUR SESSION ADMIN
 db.ref("active_sessions/" + convKey).update({
-  name: currentName,
+  name: profils[imgNum],
   userEmail: email,
   imgNum: imgNum, 
   status: "online",
-  lastSeen: new Date().toLocaleString(),
-  lastTimestamp: firebase.database.ServerValue.TIMESTAMP
+  lastSeen: new Date().toLocaleString()
 });
 
+// FONCTION POUR REMONTER EN HAUT CHEZ L'ADMIN
+function updateAdminSort() {
+  db.ref("active_sessions/" + convKey).update({
+    lastTimestamp: firebase.database.ServerValue.TIMESTAMP,
+    lastFrom: "user"
+  });
+}
+
+// GESTION DU CHAT
 const chatBody = document.getElementById("chatBody");
 
 function scrollBottom() {
-  chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: 'smooth' });
+  setTimeout(() => {
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }, 100);
 }
 
-// CORRECTION AFFICHAGE PHOTO SCAN + CHAT
 function renderSingleMessage(m) {
   const d = document.createElement("div");
   d.className = "msg " + (m.from === "admin" ? "left" : "right");
-  
-  let content;
-  // Si le message contient "data:image", c'est le scan brut de mybitch.html
-  if (m.message && m.message.includes("data:image")) {
-      content = m.message;
-  } else {
-      // Sinon on décrypte
-      content = decrypt(m.message, secretKey);
-  }
+  const content = decrypt(m.message, secretKey);
   
   if (content.startsWith("data:image")) {
-    d.innerHTML = `<img src="${content}" style="width:100%; border-radius:10px;">`;
+    d.innerHTML = `<img src="${content}">`;
   } else {
     d.textContent = content;
   }
@@ -178,27 +180,25 @@ db.ref("messages/" + convKey).on("child_added", (snap) => {
   const msgData = snap.val();
   renderSingleMessage(msgData);
 
-  // LOGIQUE BIENVENUE ROBUSTE
   db.ref("messages/" + convKey).once("value", (allMsgs) => {
-    const msgs = allMsgs.val();
-    let hasAdminSaidHi = false;
-    for(let key in msgs) { if(msgs[key].from === "admin") hasAdminSaidHi = true; }
-
-    if (!hasAdminSaidHi && !welcomeTriggered) {
+    if (allMsgs.numChildren() === 1 && msgData.from === "user" && !welcomeTriggered) {
       welcomeTriggered = true;
-      const welcomeText = `Hola cariño, soy ${currentName}! 🫦 Recibí tu foto. Ya estoy lista para ti... ¿Qué tienes en mente para nosotros hoy? 🔥`;
+      const welcomeText = "Hola, cariño! 🫦 Recibí tu escaneo. Mis servicios ya están disponibles para ti. Dime, ¿qué buscas esta noche? 🥵👅Dime de dónde eres para poder ver tus alrededores.";
       setTimeout(() => {
         db.ref("messages/" + convKey).push({
           from: "admin",
           message: encrypt(welcomeText, secretKey),
           date: new Date().toLocaleString()
         });
-      }, 2000);
+      }, 1000);
     }
   });
 });
 
 // ENVOI TEXTE
+document.getElementById("sendBtn").onclick = sendMessage;
+document.getElementById("textInput").onkeypress = (e) => { if(e.key === "Enter") sendMessage(); };
+
 function sendMessage() {
   const text = document.getElementById("textInput").value.trim();
   if(!text) return;
@@ -206,39 +206,36 @@ function sendMessage() {
     from: "user",
     message: encrypt(text, secretKey),
     timestamp: firebase.database.ServerValue.TIMESTAMP
-  }).then(() => {
-      db.ref("active_sessions/" + convKey).update({ lastFrom: "user", lastTimestamp: firebase.database.ServerValue.TIMESTAMP });
-  });
+  }).then(updateAdminSort);
   document.getElementById("textInput").value = "";
+  scrollBottom();
 }
 
-document.getElementById("sendBtn").onclick = sendMessage;
-document.getElementById("textInput").onkeypress = (e) => { if(e.key === "Enter") sendMessage(); };
-
-// ENVOI PHOTO CHAT
+// ENVOI PHOTO
 document.getElementById("photoBtn").onclick = () => document.getElementById("photoInput").click();
 document.getElementById("photoInput").onchange = (e) => {
   const file = e.target.files[0];
   if(!file) return;
   const reader = new FileReader();
+  reader.readAsDataURL(file);
   reader.onload = (event) => {
     const img = new Image();
     img.src = event.target.result;
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      const MAX_WIDTH = 800;
+      const MAX_WIDTH = 1000;
       let w = img.width, h = img.height;
       if (w > MAX_WIDTH) { h *= MAX_WIDTH / w; w = MAX_WIDTH; }
       canvas.width = w; canvas.height = h;
       canvas.getContext('2d').drawImage(img, 0, 0, w, h);
       db.ref("messages/" + convKey).push({
         from: "user",
-        message: encrypt(canvas.toDataURL('image/jpeg', 0.6), secretKey),
+        message: encrypt(canvas.toDataURL('image/jpeg', 0.7), secretKey),
         timestamp: firebase.database.ServerValue.TIMESTAMP
-      });
+      }).then(updateAdminSort);
+      document.getElementById("photoInput").value = "";
     };
   };
-  reader.readAsDataURL(file);
 };
 
 // WEBRTC
@@ -259,21 +256,14 @@ async function startCall(){
     pc.onicecandidate = e => {
       if(e.candidate) db.ref("calls/"+convKey+"/candidates/user").push(JSON.stringify(e.candidate));
     };
-    db.ref("calls/"+convKey).on("value", async (snap) => {
-      const data = snap.val();
-      if(data && data.answer && !pc.currentRemoteDescription){
-        await pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(data.answer)));
-      }
-    });
-    db.ref("calls/"+convKey+"/candidates/admin").on("child_added", snap => {
-      pc.addIceCandidate(new RTCIceCandidate(JSON.parse(snap.val())));
-    });
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
     db.ref("calls/"+convKey).update({offer: JSON.stringify(offer), status: "calling"});
-  } catch(err) { alert("Camera Error"); }
+  } catch(err) { alert("no access"); }
 }
+
 document.getElementById("callBtn").onclick = startCall;
+document.getElementById("textInput").addEventListener("focus", scrollBottom);
 </script>
 </body>
 </html>
