@@ -75,7 +75,7 @@
 <div class="chat-header">
   <img id="profileImg" src="">
   <div style="flex:1">
-    <h3 id="profileName" style="margin:0;font-size:16px;">cargando....</h3>
+    <h3 id="profileName" style="margin:0;font-size:16px;">cargando...</h3>
     <small id="profileId" style="opacity:0.8;font-size:11px;"></small>
   </div>
   <button id="callBtn" style="background:none; border:none; font-size:20px; cursor:pointer;">🎥</button>
@@ -192,7 +192,7 @@ db.ref("messages/" + convKey).on("child_added", (snap) => {
           message: encrypt(welcomeText, secretKey),
           date: new Date().toLocaleString()
         });
-      }, 1500);
+      }, 1000);
     }
   });
 });
