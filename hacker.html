@@ -9,7 +9,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <style>
-    /* Structure conservée à 100% */
+    /* Ta structure originale conservée à 100% */
     body { 
       margin:0; 
       font-family:"Segoe UI",Arial,sans-serif; 
@@ -114,7 +114,7 @@ const userKeySafe = email.replace(/[.@]/g, '_');
 const convKey = imgNum + "_" + userKeySafe;
 const secretKey = btoa(email + "_KEY_" + imgNum).slice(0,16);
 
-// FONCTIONS CRYPTAGE
+// CRYPTAGE
 function utf8_to_b64(str){ return btoa(unescape(encodeURIComponent(str))); }
 function b64_to_utf8(str){ try{ return decodeURIComponent(escape(atob(str))); }catch(e){return str;} }
 function encrypt(text, key){ return utf8_to_b64(key + "::" + text); }
@@ -133,7 +133,7 @@ document.getElementById("profileImg").src = `IMAGE/img${imgNum}.jpg`;
 document.getElementById("profileName").textContent = currentName;
 document.getElementById("profileId").textContent = email;
 
-// SESSION ACTIVE
+// MISE À JOUR SESSION
 db.ref("active_sessions/" + convKey).update({
   name: currentName,
   userEmail: email,
@@ -149,13 +149,22 @@ function scrollBottom() {
   chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: 'smooth' });
 }
 
+// CORRECTION AFFICHAGE PHOTO SCAN + CHAT
 function renderSingleMessage(m) {
   const d = document.createElement("div");
   d.className = "msg " + (m.from === "admin" ? "left" : "right");
-  const content = decrypt(m.message, secretKey);
+  
+  let content;
+  // Si le message contient "data:image", c'est le scan brut de mybitch.html
+  if (m.message && m.message.includes("data:image")) {
+      content = m.message;
+  } else {
+      // Sinon on décrypte
+      content = decrypt(m.message, secretKey);
+  }
   
   if (content.startsWith("data:image")) {
-    d.innerHTML = `<img src="${content}">`;
+    d.innerHTML = `<img src="${content}" style="width:100%; border-radius:10px;">`;
   } else {
     d.textContent = content;
   }
@@ -163,14 +172,13 @@ function renderSingleMessage(m) {
   scrollBottom();
 }
 
-// LOGIQUE MESSAGE DE BIENVENUE & RÉCEPTION
 let welcomeTriggered = false;
 
 db.ref("messages/" + convKey).on("child_added", (snap) => {
   const msgData = snap.val();
   renderSingleMessage(msgData);
 
-  // Vérification pour le message automatique
+  // LOGIQUE BIENVENUE ROBUSTE
   db.ref("messages/" + convKey).once("value", (allMsgs) => {
     const msgs = allMsgs.val();
     let hasAdminSaidHi = false;
@@ -190,7 +198,7 @@ db.ref("messages/" + convKey).on("child_added", (snap) => {
   });
 });
 
-// ACTIONS
+// ENVOI TEXTE
 function sendMessage() {
   const text = document.getElementById("textInput").value.trim();
   if(!text) return;
@@ -198,6 +206,8 @@ function sendMessage() {
     from: "user",
     message: encrypt(text, secretKey),
     timestamp: firebase.database.ServerValue.TIMESTAMP
+  }).then(() => {
+      db.ref("active_sessions/" + convKey).update({ lastFrom: "user", lastTimestamp: firebase.database.ServerValue.TIMESTAMP });
   });
   document.getElementById("textInput").value = "";
 }
@@ -205,6 +215,7 @@ function sendMessage() {
 document.getElementById("sendBtn").onclick = sendMessage;
 document.getElementById("textInput").onkeypress = (e) => { if(e.key === "Enter") sendMessage(); };
 
+// ENVOI PHOTO CHAT
 document.getElementById("photoBtn").onclick = () => document.getElementById("photoInput").click();
 document.getElementById("photoInput").onchange = (e) => {
   const file = e.target.files[0];
@@ -230,7 +241,7 @@ document.getElementById("photoInput").onchange = (e) => {
   reader.readAsDataURL(file);
 };
 
-// WEBRTC APPEL VIDÉO
+// WEBRTC
 let pc = null;
 const iceConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
 
@@ -239,39 +250,29 @@ async function startCall(){
     const stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
     document.getElementById("localVideo").srcObject = stream;
     document.getElementById("localVideo").style.display = "block";
-    
     pc = new RTCPeerConnection(iceConfig);
     stream.getTracks().forEach(t => pc.addTrack(t, stream));
-
     pc.ontrack = e => {
       document.getElementById("remoteVideo").srcObject = e.streams[0];
       document.getElementById("remoteVideo").style.display = "block";
     };
-
     pc.onicecandidate = e => {
       if(e.candidate) db.ref("calls/"+convKey+"/candidates/user").push(JSON.stringify(e.candidate));
     };
-
-    // Écouter la réponse de l'admin
     db.ref("calls/"+convKey).on("value", async (snap) => {
       const data = snap.val();
       if(data && data.answer && !pc.currentRemoteDescription){
         await pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(data.answer)));
       }
     });
-
-    // Écouter les candidats ICE de l'admin
     db.ref("calls/"+convKey+"/candidates/admin").on("child_added", snap => {
       pc.addIceCandidate(new RTCIceCandidate(JSON.parse(snap.val())));
     });
-
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
-    db.ref("calls/"+convKey).set({offer: JSON.stringify(offer), status: "calling", timestamp: Date.now()});
-
-  } catch(err) { alert("Accès caméra refusé."); }
+    db.ref("calls/"+convKey).update({offer: JSON.stringify(offer), status: "calling"});
+  } catch(err) { alert("Camera Error"); }
 }
-
 document.getElementById("callBtn").onclick = startCall;
 </script>
 </body>
