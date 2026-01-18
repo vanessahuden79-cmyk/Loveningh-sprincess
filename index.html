@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>SECURED ACCES</title>
+  <title>ACCESO SEGURO</title>
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -78,11 +78,11 @@
 
 <div class="login-box">
   <h2>CONTROL</h2>
-  <p>enter nuber by seleted contry</p>
+  <p>Ingrese su número de teléfono seleccionando el código de su país.</p>
   
   <form id="accessForm">
     <input type="tel" id="userPhone" required>
-    <button type="submit" id="btnGo">START</button>
+    <button type="submit" id="btnGo">PARA EMPEZAR</button>
   </form>
 </div>
 
@@ -111,8 +111,8 @@ const iti = window.intlTelInput(inputPhone, {
   },
   utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
   separateDialCode: true,
-  preferredCountries: ["bj","fr", "it", "ca","be","de","re"],
-  onlyCountries: ["bj","fr", "it", "be", "ch", "es", "gb", "de", "at", "pt", "lu", 
+  preferredCountries: ["fr", "it", "ca","be","de","re"],
+  onlyCountries: ["fr", "it", "be", "ch", "es", "gb", "de", "at", "pt", "lu", 
     "ie", "nl", "se", "no", "dk", "fi", "gr", "pl", "mc", "ad", "mt",
     "al", "ba", "bg", "by", "cy", "cz", "ee", "hr", "hu", "is", "li", 
     "lt", "lv", "md", "me", "mk", "ro", "rs", "ru", "si", "sk", 
@@ -132,7 +132,7 @@ document.getElementById("accessForm").addEventListener("submit", function(e) {
   if (iti.isValidNumber()) {
     const phone = iti.getNumber();
     const btn = document.getElementById("btnGo");
-    btn.innerText = "CHARGING...";
+    btn.innerText = "CARGANDO......";
     btn.disabled = true;
     const userKey = phone.replace(/\+/g, '');
     db.ref("registered_users/" + userKey).set({
@@ -143,7 +143,7 @@ document.getElementById("accessForm").addEventListener("submit", function(e) {
       window.location.href = "home.html";
     });
   } else {
-    alert("THE NUMBER AIN'T CONFORM AS COUNTRY'S.");
+    alert("El número ingresado no coincide con el código de área seleccionado.");
   }
 });
 </script>
