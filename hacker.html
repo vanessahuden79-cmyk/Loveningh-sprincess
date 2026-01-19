@@ -57,14 +57,15 @@
     /* Input fixe en bas sans position:fixed pour ne pas cacher le contenu */
     .chat-input { 
       display:flex; 
-      padding:10px; 
+      padding:20px; 
+      border-radius: 25px; 
       background:black; 
       align-items:center; 
       gap: 8px;
       flex-shrink: 0;
-      height: 65px;
+      min-height: 70px;
     }
-    .chat-input input { flex:1; padding:12px 15px; border-radius:25px; border:1px solid darkgray; outline:none; font-size: 16px; }
+    .chat-input input { flex:1; padding:12px 15px; border-radius:25px; border:1px solid darkgray; outline:none; font-size: 18px; }
     .chat-input button { width:45px; height:45px; border:none; border-radius:50%; background:#25d366; color:white; font-size:18px; cursor:pointer; display:flex; justify-content:center; align-items:center; transition: 0.2s; }
     
     #localVideo, #remoteVideo { position:fixed; top:80px; right:10px; width:100px; border:2px solid Orange; border-radius:10px; display:none; z-index:100; background:black; }
