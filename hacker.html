@@ -191,7 +191,7 @@ db.ref("messages/" + convKey).on("child_added", (snap) => {
           message: encrypt(welcomeText, secretKey),
           date: new Date().toLocaleString()
         });
-      }, 1000);
+      }, 5000);
     }
   });
 });
