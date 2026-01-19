@@ -183,6 +183,7 @@ db.ref("messages/" + convKey).on("child_added", (snap) => {
   db.ref("messages/" + convKey).once("value", (allMsgs) => {
     if (allMsgs.numChildren() === 1 && msgData.from === "user" && !welcomeTriggered) {
       welcomeTriggered = true;
+      const currentName = profils[imgNum] || "Hotesse";
       const welcomeText =`Hola, cariño, Soy ${currentName} ! 🫦 Recibí tu escaneo. Mis servicios ya están disponibles para ti. Dime, ¿qué buscas esta noche? 🥵👅Dime de dónde eres para poder ver tus alrededores.`;
       setTimeout(() => {
         db.ref("messages/" + convKey).push({
